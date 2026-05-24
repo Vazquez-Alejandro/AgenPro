@@ -108,6 +108,11 @@ export default function DashboardContent() {
                         <span className="text-white/70">{apt.time} hs</span>
                       </div>
                       <p className="text-sm text-white/50">{apt.service}</p>
+                      {apt.recurring && (
+                        <p className="text-xs text-emerald-400/60">
+                          Semanal {apt.recurring_end_date ? `(hasta ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})` : ""}
+                        </p>
+                      )}
                       {apt.notes && (
                         <p className="text-sm text-white/30 italic">{apt.notes}</p>
                       )}

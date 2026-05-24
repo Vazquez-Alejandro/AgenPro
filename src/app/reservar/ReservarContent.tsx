@@ -38,7 +38,10 @@ export default function ReservarContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [successCount, setSuccessCount] = useState(1);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [recurring, setRecurring] = useState(false);
+  const [recurringEndDate, setRecurringEndDate] = useState("");
   const router = useRouter();
   const supabase = useRef(createClient()).current;
 
@@ -118,28 +121,47 @@ export default function ReservarContent() {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const service = services.find((s) => s.id === selectedServiceId);
 
-    const { error: insertError } = await supabase.from("appointments").insert({
-      date: dateStr,
+    const datesToCreate: string[] = [dateStr];
+
+    if (recurring && recurringEndDate) {
+      const end = new Date(recurringEndDate);
+      let current = new Date(selectedDate);
+      current.setDate(current.getDate() + 7);
+      while (current <= end) {
+        datesToCreate.push(format(current, "yyyy-MM-dd"));
+        current.setDate(current.getDate() + 7);
+      }
+    }
+
+    const appointments = datesToCreate.map((d) => ({
+      date: d,
       time: selectedTime,
       service: service?.name || "",
       service_id: selectedServiceId,
       notes: notes || null,
-      status: "confirmed",
-    });
+      status: "confirmed" as const,
+      recurring: recurring,
+      recurring_end_date: recurring ? recurringEndDate || null : null,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("appointments")
+      .insert(appointments);
 
     if (insertError) {
       setError(
         insertError.message.includes("unique")
-          ? "Este horario ya fue reservado"
+          ? "Uno o más horarios ya fueron reservados"
           : insertError.message
       );
       setLoading(false);
       return;
     }
 
+    setSuccessCount(datesToCreate.length);
     setSuccess(true);
     setLoading(false);
-    setTimeout(() => router.push("/dashboard"), 2000);
+    setTimeout(() => router.push("/dashboard"), 2500);
   };
 
   if (success) {
@@ -149,9 +171,12 @@ export default function ReservarContent() {
           <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Turno Reservado</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Turno{successCount > 1 ? "s" : ""} Reservado{successCount > 1 ? "s" : ""}</h2>
           <p className="text-white/50">
-            {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: es })} a las {selectedTime}
+            {successCount > 1
+              ? `${successCount} turnos creados correctamente`
+              : `${selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: es })} a las ${selectedTime}`
+            }
           </p>
         </div>
       </div>
@@ -258,6 +283,45 @@ export default function ReservarContent() {
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"
                 />
               </div>
+
+              <div className="bg-white/5 rounded-xl p-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => setRecurring(!recurring)}
+                    className={`w-10 h-6 rounded-full transition-all shrink-0 ${
+                      recurring ? "bg-emerald-500" : "bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
+                        recurring ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <div>
+                    <p className="text-sm font-medium text-white">Repetir semanalmente</p>
+                    <p className="text-xs text-white/40">
+                      Crear turnos automáticos todas las semanas
+                    </p>
+                  </div>
+                </label>
+                {recurring && (
+                  <div className="mt-3 pl-[3.25rem]">
+                    <label className="block text-xs font-medium text-white/50 mb-1">
+                      Hasta
+                    </label>
+                    <input
+                      type="date"
+                      value={recurringEndDate}
+                      onChange={(e) => setRecurringEndDate(e.target.value)}
+                      min={selectedDate ? format(new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd") : undefined}
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
