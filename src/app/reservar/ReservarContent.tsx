@@ -9,6 +9,7 @@ import Calendar from "@/components/Calendar";
 import TimeSlots from "@/components/TimeSlots";
 import type { Service, Availability } from "@/types";
 import { CalendarDays, ClipboardList, ArrowLeft, CheckCircle } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 function generateTimeSlots(avail: Availability): string[] {
   const slots: string[] = [];
@@ -44,6 +45,7 @@ export default function ReservarContent() {
   const [recurringEndDate, setRecurringEndDate] = useState("");
   const router = useRouter();
   const supabase = useRef(createClient()).current;
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchServices();
@@ -149,17 +151,21 @@ export default function ReservarContent() {
       .insert(appointments);
 
     if (insertError) {
-      setError(
-        insertError.message.includes("unique")
-          ? "Uno o más horarios ya fueron reservados"
-          : insertError.message
-      );
+      const msg = insertError.message.includes("unique")
+        ? "Uno o más horarios ya fueron reservados"
+        : insertError.message;
+      setError(msg);
+      toast(msg, "error");
       setLoading(false);
       return;
     }
 
     setSuccessCount(datesToCreate.length);
     setSuccess(true);
+    toast(
+      `${datesToCreate.length} turno${datesToCreate.length > 1 ? "s" : ""} creado${datesToCreate.length > 1 ? "s" : ""} correctamente`,
+      "success"
+    );
     setLoading(false);
     setTimeout(() => router.push("/dashboard"), 2500);
   };
