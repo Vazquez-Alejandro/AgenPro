@@ -2,16 +2,38 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  addMonths,
+  subMonths,
+  isSameMonth,
+  isSameDay,
+  isToday,
+} from "date-fns";
 import { es } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/client";
 import type { Appointment } from "@/types";
-import { Calendar, Clock, XCircle, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  XCircle,
+  Loader2,
+  List,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export default function DashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [view, setView] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
   const router = useRouter();
   const supabase = useRef(createClient()).current;
 
@@ -21,7 +43,6 @@ export default function DashboardContent() {
       .select("*")
       .order("date", { ascending: true })
       .order("time", { ascending: true });
-
     setAppointments(data || []);
     setLoading(false);
   };
@@ -49,6 +70,27 @@ export default function DashboardContent() {
     completed: "Completado",
   };
 
+  const aptMap = new Map<string, Appointment[]>();
+  for (const apt of appointments) {
+    const key = apt.date;
+    if (!aptMap.has(key)) aptMap.set(key, []);
+    aptMap.get(key)!.push(apt);
+  }
+
+  const weekdays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+  const monthStart = startOfMonth(calendarMonth);
+  const monthEnd = endOfMonth(monthStart);
+  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+  const calDays: Date[] = [];
+  let d = calStart;
+  while (d <= calEnd) {
+    calDays.push(d);
+    d = addDays(d, 1);
+  }
+
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -59,7 +101,7 @@ export default function DashboardContent() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">Mis Turnos</h1>
@@ -68,9 +110,31 @@ export default function DashboardContent() {
               {appointments.length === 1 ? "turno registrado" : "turnos registrados"}
             </p>
           </div>
+          <div className="flex bg-white/5 rounded-lg p-0.5">
+            <button
+              onClick={() => setView("list")}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                view === "list"
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setView("calendar")}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                view === "calendar"
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {appointments.length === 0 ? (
+        {appointments.length === 0 && view === "list" ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
               <Calendar className="w-8 h-8 text-white/30" />
@@ -84,6 +148,81 @@ export default function DashboardContent() {
             >
               Reservar Turno
             </button>
+          </div>
+        ) : view === "calendar" ? (
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-semibold text-white">
+                {format(calendarMonth, "MMMM yyyy", { locale: es })}
+              </h3>
+              <button
+                onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {weekdays.map((w) => (
+                <div key={w} className="text-center text-xs font-medium text-white/40 py-2">
+                  {w}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {calDays.map((day) => {
+                const key = format(day, "yyyy-MM-dd");
+                const dayAppts = aptMap.get(key) || [];
+                const inMonth = isSameMonth(day, calendarMonth);
+                const today = isToday(day);
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={`relative min-h-[72px] p-1.5 rounded-xl border transition-all ${
+                      inMonth ? "border-white/5" : "border-transparent"
+                    } ${today ? "ring-1 ring-emerald-500/30" : ""}`}
+                  >
+                    <span
+                      className={`text-xs font-medium ${
+                        inMonth ? "text-white/50" : "text-white/10"
+                      }`}
+                    >
+                      {format(day, "d")}
+                    </span>
+                    <div className="mt-1 space-y-0.5">
+                      {dayAppts.slice(0, 3).map((apt) => (
+                        <div
+                          key={apt.id}
+                          className={`text-[10px] px-1 py-0.5 rounded truncate leading-tight ${
+                            apt.status === "confirmed"
+                              ? "bg-emerald-500/20 text-emerald-400"
+                              : apt.status === "cancelled"
+                              ? "bg-red-500/20 text-red-400"
+                              : "bg-blue-500/20 text-blue-400"
+                          }`}
+                        >
+                          {apt.time} {apt.service}
+                        </div>
+                      ))}
+                      {dayAppts.length > 3 && (
+                        <div className="text-[10px] text-white/30 px-1">
+                          +{dayAppts.length - 3} más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -110,7 +249,10 @@ export default function DashboardContent() {
                       <p className="text-sm text-white/50">{apt.service}</p>
                       {apt.recurring && (
                         <p className="text-xs text-emerald-400/60">
-                          Semanal {apt.recurring_end_date ? `(hasta ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})` : ""}
+                          Semanal{" "}
+                          {apt.recurring_end_date
+                            ? `(hasta ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})`
+                            : ""}
                         </p>
                       )}
                       {apt.notes && (
