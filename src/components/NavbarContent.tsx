@@ -4,17 +4,43 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Calendar, LogOut, User, Clock } from "lucide-react";
+import { Calendar, LogOut, User, Clock, Shield } from "lucide-react";
 
 export default function NavbarContent() {
   const [user, setUser] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(!!data.user));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const checkUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      setUser(!!authUser);
+
+      if (authUser) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", authUser.id)
+          .single();
+        setIsAdmin(data?.is_admin || false);
+      }
+    };
+
+    checkUser();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(!!session);
+      if (session?.user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", session.user.id)
+          .single();
+        setIsAdmin(data?.is_admin || false);
+      } else {
+        setIsAdmin(false);
+      }
     });
     return () => sub?.subscription.unsubscribe();
   }, []);
@@ -52,6 +78,15 @@ export default function NavbarContent() {
                   <Calendar className="w-4 h-4" />
                   Reservar
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-emerald-400 transition-colors"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-white/50 hover:text-red-400 transition-colors"

@@ -1,0 +1,143 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Service } from "@/types";
+import { Plus, Save, Loader2, X } from "lucide-react";
+
+export default function ServicesContent() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState("");
+  const [newDuration, setNewDuration] = useState(60);
+  const supabase = useRef(createClient()).current;
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from("services")
+      .select("*")
+      .order("name");
+    if (data) setServices(data);
+    setLoading(false);
+  };
+
+  const toggleActive = async (service: Service) => {
+    await supabase
+      .from("services")
+      .update({ is_active: !service.is_active })
+      .eq("id", service.id);
+    fetchServices();
+  };
+
+  const addService = async () => {
+    if (!newName.trim()) return;
+    await supabase.from("services").insert({
+      name: newName.trim(),
+      duration: newDuration,
+    });
+    setNewName("");
+    setNewDuration(60);
+    fetchServices();
+  };
+
+  const deleteService = async (id: string) => {
+    await supabase.from("services").delete().eq("id", id);
+    fetchServices();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-white mb-6">Servicios</h1>
+
+      <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-6">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1">
+              Nombre
+            </label>
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Consulta General"
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 w-60"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1">
+              Duración (min)
+            </label>
+            <input
+              type="number"
+              value={newDuration}
+              onChange={(e) => setNewDuration(parseInt(e.target.value) || 60)}
+              min={15}
+              step={15}
+              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+          </div>
+          <button
+            onClick={addService}
+            disabled={!newName.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            Agregar
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {services.length === 0 ? (
+          <p className="text-white/30 text-center py-8">
+            No hay servicios configurados
+          </p>
+        ) : (
+          services.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl"
+            >
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => toggleActive(s)}
+                  className={`w-10 h-6 rounded-full transition-all ${
+                    s.is_active ? "bg-emerald-500" : "bg-white/10"
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
+                      s.is_active ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+                <div>
+                  <p className="text-white font-medium">{s.name}</p>
+                  <p className="text-sm text-white/40">{s.duration} min</p>
+                </div>
+              </div>
+              <button
+                onClick={() => deleteService(s.id)}
+                className="p-2 text-white/30 hover:text-red-400 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

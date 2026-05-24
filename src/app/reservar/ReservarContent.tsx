@@ -2,33 +2,101 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, getDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/client";
 import Calendar from "@/components/Calendar";
 import TimeSlots from "@/components/TimeSlots";
+import type { Service, Availability } from "@/types";
 import { CalendarDays, ClipboardList, ArrowLeft, CheckCircle } from "lucide-react";
 
-const SERVICES = [
-  "Consulta General",
-  "Consulta de Especialidad",
-  "Chequeo de Rutina",
-  "Asesoría",
-  "Otro",
-];
+function generateTimeSlots(avail: Availability): string[] {
+  const slots: string[] = [];
+  const start = avail.start_time.split(":").map(Number);
+  const end = avail.end_time.split(":").map(Number);
+  const startMinutes = start[0] * 60 + start[1];
+  const endMinutes = end[0] * 60 + end[1];
+  const duration = avail.slot_duration;
+
+  for (let m = startMinutes; m + duration <= endMinutes; m += duration) {
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    slots.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+  }
+  return slots;
+}
 
 export default function ReservarContent() {
   const [step, setStep] = useState<"calendar" | "form" | "confirm">("calendar");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [disabledSlots, setDisabledSlots] = useState<string[]>([]);
-  const [service, setService] = useState(SERVICES[0]);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const router = useRouter();
   const supabase = useRef(createClient()).current;
+
+  useEffect(() => {
+    fetchServices();
+    fetchBlockedDates();
+  }, []);
+
+  const fetchBlockedDates = async () => {
+    const { data } = await supabase.from("blocked_dates").select("date");
+    if (data) setBlockedDates(data.map((b: { date: string }) => b.date));
+  };
+
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from("services")
+      .select("*")
+      .eq("is_active", true)
+      .order("name");
+    if (data && data.length > 0) {
+      setServices(data);
+      setSelectedServiceId(data[0].id);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    loadTimeSlots();
+    fetchDisabledSlots();
+  }, [selectedDate]);
+
+  const loadTimeSlots = async () => {
+    if (!selectedDate) return;
+    const dayOfWeek = getDay(selectedDate);
+
+    const { data: blocked } = await supabase
+      .from("blocked_dates")
+      .select("id")
+      .eq("date", format(selectedDate, "yyyy-MM-dd"));
+
+    if (blocked && blocked.length > 0) {
+      setTimeSlots([]);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("availability")
+      .select("*")
+      .eq("day_of_week", dayOfWeek)
+      .eq("is_available", true)
+      .single();
+
+    if (data) {
+      setTimeSlots(generateTimeSlots(data as Availability));
+    } else {
+      setTimeSlots([]);
+    }
+  };
 
   const fetchDisabledSlots = async () => {
     if (!selectedDate) return;
@@ -41,21 +109,20 @@ export default function ReservarContent() {
     if (data) setDisabledSlots(data.map((a: { time: string }) => a.time));
   };
 
-  useEffect(() => {
-    if (selectedDate) fetchDisabledSlots();
-  }, [selectedDate]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !selectedTime) return;
+    if (!selectedDate || !selectedTime || !selectedServiceId) return;
     setLoading(true);
     setError("");
 
     const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const service = services.find((s) => s.id === selectedServiceId);
+
     const { error: insertError } = await supabase.from("appointments").insert({
       date: dateStr,
       time: selectedTime,
-      service,
+      service: service?.name || "",
+      service_id: selectedServiceId,
       notes: notes || null,
       status: "confirmed",
     });
@@ -84,9 +151,7 @@ export default function ReservarContent() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Turno Reservado</h2>
           <p className="text-white/50">
-            {selectedDate &&
-              format(selectedDate, "dd 'de' MMMM", { locale: es })}{" "}
-            a las {selectedTime}
+            {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: es })} a las {selectedTime}
           </p>
         </div>
       </div>
@@ -132,6 +197,7 @@ export default function ReservarContent() {
                 setSelectedDate(date);
                 setSelectedTime(null);
               }}
+              blockedDates={blockedDates}
             />
             {selectedDate && (
               <div className="mt-6 pt-6 border-t border-white/5">
@@ -139,6 +205,7 @@ export default function ReservarContent() {
                   selectedTime={selectedTime}
                   onSelect={setSelectedTime}
                   disabledSlots={disabledSlots}
+                  timeSlots={timeSlots}
                 />
               </div>
             )}
@@ -159,11 +226,7 @@ export default function ReservarContent() {
             <div className="mb-6 p-4 bg-white/5 rounded-xl">
               <p className="text-sm text-white/50">Fecha y hora seleccionada:</p>
               <p className="text-white font-medium mt-1">
-                {selectedDate &&
-                  format(selectedDate, "EEEE, dd 'de' MMMM", {
-                    locale: es,
-                  })}{" "}
-                - {selectedTime}
+                {selectedDate && format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })} - {selectedTime}
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -172,13 +235,13 @@ export default function ReservarContent() {
                   Servicio
                 </label>
                 <select
-                  value={service}
-                  onChange={(e) => setService(e.target.value)}
+                  value={selectedServiceId}
+                  onChange={(e) => setSelectedServiceId(e.target.value)}
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all appearance-none"
                 >
-                  {SERVICES.map((s) => (
-                    <option key={s} value={s} className="bg-[#1a1a1a]">
-                      {s}
+                  {services.map((s) => (
+                    <option key={s.id} value={s.id} className="bg-[#1a1a1a]">
+                      {s.name} ({s.duration} min)
                     </option>
                   ))}
                 </select>

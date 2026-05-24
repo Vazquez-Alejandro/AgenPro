@@ -23,12 +23,14 @@ interface CalendarProps {
   selected: Date | null;
   onSelect: (date: Date) => void;
   minDate?: Date;
+  blockedDates?: string[];
 }
 
 export default function Calendar({
   selected,
   onSelect,
   minDate = new Date(),
+  blockedDates = [],
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -45,6 +47,9 @@ export default function Calendar({
   }
 
   const weekdays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+  const isDateBlocked = (d: Date) =>
+    blockedDates.includes(format(d, "yyyy-MM-dd"));
 
   return (
     <div>
@@ -79,10 +84,8 @@ export default function Calendar({
 
       <div className="grid grid-cols-7 gap-1">
         {days.map((d) => {
-          const isDisabled = isBefore(
-            startOfDay(d),
-            startOfDay(minDate)
-          );
+          const isBlocked = isDateBlocked(d);
+          const isDisabled = isBefore(startOfDay(d), startOfDay(minDate));
           const isSelected = selected && isSameDay(d, selected);
           const isCurrentMonth = isSameMonth(d, currentMonth);
           const today = isToday(d);
@@ -90,14 +93,25 @@ export default function Calendar({
           return (
             <button
               key={d.toISOString()}
-              onClick={() => !isDisabled && isCurrentMonth && onSelect(d)}
-              disabled={isDisabled || !isCurrentMonth}
+              onClick={() =>
+                !isDisabled && !isBlocked && isCurrentMonth && onSelect(d)
+              }
+              disabled={isDisabled || isBlocked || !isCurrentMonth}
               className={`
                 relative w-full aspect-square rounded-xl text-sm font-medium transition-all
                 ${!isCurrentMonth ? "text-white/10" : ""}
                 ${isDisabled ? "text-white/10 cursor-not-allowed" : ""}
-                ${isSelected ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-105" : ""}
-                ${!isSelected && isCurrentMonth && !isDisabled ? "text-white/70 hover:bg-white/10 hover:text-white" : ""}
+                ${isBlocked ? "text-red-400/30 cursor-not-allowed line-through" : ""}
+                ${
+                  isSelected
+                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-105"
+                    : ""
+                }
+                ${
+                  !isSelected && isCurrentMonth && !isDisabled && !isBlocked
+                    ? "text-white/70 hover:bg-white/10 hover:text-white"
+                    : ""
+                }
                 ${today && !isSelected && isCurrentMonth ? "ring-1 ring-emerald-500/50" : ""}
               `}
             >
