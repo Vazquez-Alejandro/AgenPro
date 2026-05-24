@@ -4,13 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Calendar, LogOut, User, Clock, Shield } from "lucide-react";
+import { Calendar, LogOut, User, Clock, Shield, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function NavbarContent() {
   const [user, setUser] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { theme, toggle } = useTheme();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -62,6 +64,13 @@ export default function NavbarContent() {
           </Link>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggle}
+              className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5 light:hover:bg-black/5 light:text-black/50 light:hover:text-black"
+              title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             {user ? (
               <>
                 <Link
