@@ -135,35 +135,33 @@ export default function ReservarContent() {
       }
     }
 
-    const appointments = datesToCreate.map((d) => ({
-      date: d,
-      time: selectedTime,
-      service: service?.name || "",
-      service_id: selectedServiceId,
-      notes: notes || null,
-      status: "confirmed" as const,
-      recurring: recurring,
-      recurring_end_date: recurring ? recurringEndDate || null : null,
-    }));
+    const res = await fetch("/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: dateStr,
+        time: selectedTime,
+        service: service?.name || "",
+        service_id: selectedServiceId,
+        notes: notes || null,
+        recurring,
+        recurring_end_date: recurring ? recurringEndDate || null : null,
+      }),
+    });
 
-    const { error: insertError } = await supabase
-      .from("appointments")
-      .insert(appointments);
+    const data = await res.json();
 
-    if (insertError) {
-      const msg = insertError.message.includes("unique")
-        ? "Uno o más horarios ya fueron reservados"
-        : insertError.message;
-      setError(msg);
-      toast(msg, "error");
+    if (!res.ok) {
+      setError(data.error);
+      toast(data.error, "error");
       setLoading(false);
       return;
     }
 
-    setSuccessCount(datesToCreate.length);
+    setSuccessCount(data.count);
     setSuccess(true);
     toast(
-      `${datesToCreate.length} turno${datesToCreate.length > 1 ? "s" : ""} creado${datesToCreate.length > 1 ? "s" : ""} correctamente`,
+      `${data.count} turno${data.count > 1 ? "s" : ""} creado${data.count > 1 ? "s" : ""} correctamente`,
       "success"
     );
     setLoading(false);
