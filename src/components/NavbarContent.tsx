@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Calendar, LogOut, User, Clock, Shield, Sun, Moon } from "lucide-react";
+import { Calendar, LogOut, User, Clock, Shield, Sun, Moon, Globe } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLang } from "@/contexts/LangContext";
 
 export default function NavbarContent() {
   const [user, setUser] = useState<boolean | null>(null);
@@ -13,6 +14,7 @@ export default function NavbarContent() {
   const router = useRouter();
   const supabase = createClient();
   const { theme, toggle } = useTheme();
+  const { locale, setLocale } = useLang();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -64,6 +66,13 @@ export default function NavbarContent() {
           </Link>
 
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => setLocale(locale === "es" ? "en" : "es")}
+              className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5 light:hover:bg-black/5 light:text-black/50 light:hover:text-black text-xs font-medium"
+              title={locale === "es" ? "English" : "Español"}
+            >
+              <Globe className="w-4 h-4" />
+            </button>
             <button
               onClick={toggle}
               className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5 light:hover:bg-black/5 light:text-black/50 light:hover:text-black"

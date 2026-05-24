@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { LangProvider } from "@/contexts/LangContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,10 +34,12 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-[#0a0a0a] text-[#ededed] light:bg-white light:text-[#171717] transition-colors">
         <ThemeProvider>
-          <ToastProvider>
-            <Navbar />
-            {children}
-          </ToastProvider>
+          <LangProvider>
+            <ToastProvider>
+              <Navbar />
+              {children}
+            </ToastProvider>
+          </LangProvider>
         </ThemeProvider>
       </body>
     </html>
