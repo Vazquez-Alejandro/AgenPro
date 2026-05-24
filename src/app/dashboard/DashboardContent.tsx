@@ -22,11 +22,11 @@ import {
   Calendar,
   Clock,
   XCircle,
-  Loader2,
   List,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { CardSkeleton, Skeleton } from "@/components/Skeleton";
 
 export default function DashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -93,8 +93,18 @@ export default function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+      <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -276,7 +286,7 @@ export default function DashboardContent() {
                           className="flex items-center gap-1 px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50"
                         >
                           {cancelling === apt.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <div className="w-3 h-3 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
                           ) : (
                             <XCircle className="w-3 h-3" />
                           )}
