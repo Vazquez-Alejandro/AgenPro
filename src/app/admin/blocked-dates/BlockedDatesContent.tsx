@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { BlockedDate } from "@/types";
 import { Plus, Trash2, Loader2 } from "lucide-react";
+import { useTenant } from "@/contexts/TenantContext";
 
 export default function BlockedDatesContent() {
   const [dates, setDates] = useState<BlockedDate[]>([]);
@@ -11,25 +12,29 @@ export default function BlockedDatesContent() {
   const [newDate, setNewDate] = useState("");
   const [newReason, setNewReason] = useState("");
   const supabase = useRef(createClient()).current;
+  const { tenant } = useTenant();
 
   useEffect(() => {
     fetchDates();
-  }, []);
+  }, [tenant]);
 
   const fetchDates = async () => {
+    if (!tenant) { setLoading(false); return; }
     const { data } = await supabase
       .from("blocked_dates")
       .select("*")
+      .eq("tenant_id", tenant.id)
       .order("date");
     if (data) setDates(data);
     setLoading(false);
   };
 
   const addDate = async () => {
-    if (!newDate) return;
+    if (!newDate || !tenant) return;
     await supabase.from("blocked_dates").insert({
       date: newDate,
       reason: newReason || null,
+      tenant_id: tenant.id,
     });
     setNewDate("");
     setNewReason("");
@@ -37,7 +42,8 @@ export default function BlockedDatesContent() {
   };
 
   const deleteDate = async (id: string) => {
-    await supabase.from("blocked_dates").delete().eq("id", id);
+    if (!tenant) return;
+    await supabase.from("blocked_dates").delete().eq("id", id).eq("tenant_id", tenant.id);
     fetchDates();
   };
 

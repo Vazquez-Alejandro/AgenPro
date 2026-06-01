@@ -60,7 +60,7 @@ export default function NavbarContent() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 group">
             <Clock className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent light:from-black light:to-black/70">
               TurnosOnline
             </span>
           </Link>
@@ -115,6 +115,13 @@ export default function NavbarContent() {
               </>
             ) : (
               <>
+                <Link
+                  href="/turno"
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all"
+                >
+                  <Calendar className="w-4 h-4" />
+                  Sacar Turno
+                </Link>
                 <Link
                   href="/login"
                   className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"

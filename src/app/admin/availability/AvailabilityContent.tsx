@@ -5,21 +5,25 @@ import { createClient } from "@/lib/supabase/client";
 import type { Availability } from "@/types";
 import { DAY_NAMES } from "@/types";
 import { Save, Loader2 } from "lucide-react";
+import { useTenant } from "@/contexts/TenantContext";
 
 export default function AvailabilityContent() {
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = useRef(createClient()).current;
+  const { tenant } = useTenant();
 
   useEffect(() => {
     fetchAvailability();
-  }, []);
+  }, [tenant]);
 
   const fetchAvailability = async () => {
+    if (!tenant) { setLoading(false); return; }
     const { data } = await supabase
       .from("availability")
       .select("*")
+      .eq("tenant_id", tenant.id)
       .order("day_of_week");
     if (data) setAvailability(data);
     setLoading(false);
@@ -29,7 +33,7 @@ export default function AvailabilityContent() {
     setAvailability((prev) =>
       prev.map((d) =>
         d.day_of_week === day.day_of_week
-          ? { ...d, is_available: !d.is_available }
+          ? { ...d, enabled: !d.enabled }
           : d
       )
     );
@@ -48,12 +52,14 @@ export default function AvailabilityContent() {
   };
 
   const handleSave = async () => {
+    if (!tenant) return;
     setSaving(true);
     for (const day of availability) {
       await supabase.from("availability").upsert({
         id: day.id,
+        tenant_id: tenant.id,
         day_of_week: day.day_of_week,
-        is_available: day.is_available,
+        enabled: day.enabled,
         start_time: day.start_time,
         end_time: day.end_time,
         slot_duration: day.slot_duration,
@@ -115,12 +121,12 @@ export default function AvailabilityContent() {
                   <button
                     onClick={() => toggleDay(day)}
                     className={`w-10 h-6 rounded-full transition-all ${
-                      day.is_available ? "bg-emerald-500" : "bg-white/10"
+                      day.enabled ? "bg-emerald-500" : "bg-white/10"
                     }`}
                   >
                     <div
                       className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
-                        day.is_available ? "translate-x-5" : "translate-x-1"
+                        day.enabled ? "translate-x-5" : "translate-x-1"
                       }`}
                     />
                   </button>
@@ -132,7 +138,7 @@ export default function AvailabilityContent() {
                     onChange={(e) =>
                       updateField(day.day_of_week, "start_time", e.target.value)
                     }
-                    disabled={!day.is_available}
+                    disabled={!day.enabled}
                     className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-30"
                   />
                 </td>
@@ -143,7 +149,7 @@ export default function AvailabilityContent() {
                     onChange={(e) =>
                       updateField(day.day_of_week, "end_time", e.target.value)
                     }
-                    disabled={!day.is_available}
+                    disabled={!day.enabled}
                     className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-30"
                   />
                 </td>
@@ -158,7 +164,7 @@ export default function AvailabilityContent() {
                         parseInt(e.target.value) || 60
                       )
                     }
-                    disabled={!day.is_available}
+                    disabled={!day.enabled}
                     min={15}
                     max={240}
                     step={15}

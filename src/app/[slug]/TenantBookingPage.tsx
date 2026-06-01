@@ -1,16 +1,23 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { format, getDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/client";
 import Calendar from "@/components/Calendar";
 import TimeSlots from "@/components/TimeSlots";
-import type { Service, Availability } from "@/types";
-import { CalendarDays, ClipboardList, ArrowLeft, CheckCircle } from "lucide-react";
+import type { Service, Availability, Tenant } from "@/types";
+import {
+  CalendarDays,
+  ArrowLeft,
+  CheckCircle,
+  User,
+  Mail,
+  Phone,
+  Scissors,
+  Clock,
+} from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
-import { useTenant } from "@/contexts/TenantContext";
 
 function generateTimeSlots(avail: Availability): string[] {
   const slots: string[] = [];
@@ -19,7 +26,6 @@ function generateTimeSlots(avail: Availability): string[] {
   const startMinutes = start[0] * 60 + start[1];
   const endMinutes = end[0] * 60 + end[1];
   const duration = avail.slot_duration;
-
   for (let m = startMinutes; m + duration <= endMinutes; m += duration) {
     const h = Math.floor(m / 60);
     const min = m % 60;
@@ -28,7 +34,11 @@ function generateTimeSlots(avail: Availability): string[] {
   return slots;
 }
 
-export default function ReservarContent() {
+export default function TenantBookingPage({
+  tenant,
+}: {
+  tenant: Tenant;
+}) {
   const [step, setStep] = useState<"calendar" | "form" | "confirm">("calendar");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -36,32 +46,38 @@ export default function ReservarContent() {
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
-  const [notes, setNotes] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [successCount, setSuccessCount] = useState(1);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
-  const [recurring, setRecurring] = useState(false);
-  const [recurringEndDate, setRecurringEndDate] = useState("");
-  const router = useRouter();
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
-  const { tenant } = useTenant();
+
+  const primaryColor = tenant.primary_color || "#10b981";
 
   useEffect(() => {
     fetchServices();
     fetchBlockedDates();
   }, []);
 
+  useEffect(() => {
+    if (!selectedDate) return;
+    loadTimeSlots();
+    fetchDisabledSlots();
+  }, [selectedDate]);
+
   const fetchBlockedDates = async () => {
-    if (!tenant) return;
-    const { data } = await supabase.from("blocked_dates").select("date").eq("tenant_id", tenant.id);
+    const { data } = await supabase
+      .from("blocked_dates")
+      .select("date")
+      .eq("tenant_id", tenant.id);
     if (data) setBlockedDates(data.map((b: { date: string }) => b.date));
   };
 
   const fetchServices = async () => {
-    if (!tenant) return;
     const { data } = await supabase
       .from("services")
       .select("*")
@@ -74,17 +90,10 @@ export default function ReservarContent() {
     }
   };
 
-  useEffect(() => {
-    if (!selectedDate) return;
-    loadTimeSlots();
-    fetchDisabledSlots();
-  }, [selectedDate]);
-
   const loadTimeSlots = async () => {
     if (!selectedDate) return;
     const dayOfWeek = getDay(selectedDate);
 
-    if (!tenant) return;
     const { data: blocked } = await supabase
       .from("blocked_dates")
       .select("id")
@@ -96,7 +105,6 @@ export default function ReservarContent() {
       return;
     }
 
-    if (!tenant) return;
     const { data } = await supabase
       .from("availability")
       .select("*")
@@ -113,7 +121,7 @@ export default function ReservarContent() {
   };
 
   const fetchDisabledSlots = async () => {
-    if (!selectedDate || !tenant) return;
+    if (!selectedDate) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data } = await supabase
       .from("appointments")
@@ -127,70 +135,61 @@ export default function ReservarContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedTime || !selectedServiceId) return;
+    if (!clientName.trim() || !clientEmail.trim()) return;
+
     setLoading(true);
     setError("");
 
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const service = services.find((s) => s.id === selectedServiceId);
 
-    const datesToCreate: string[] = [dateStr];
-
-    if (recurring && recurringEndDate) {
-      const end = new Date(recurringEndDate);
-      let current = new Date(selectedDate);
-      current.setDate(current.getDate() + 7);
-      while (current <= end) {
-        datesToCreate.push(format(current, "yyyy-MM-dd"));
-        current.setDate(current.getDate() + 7);
-      }
-    }
-
-    const res = await fetch("/api/appointments", {
+    const res = await fetch("/api/public-appointments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         date: dateStr,
         time: selectedTime,
-        service: service?.name || "",
         service_id: selectedServiceId,
-        notes: notes || null,
-        recurring,
-        recurring_end_date: recurring ? recurringEndDate || null : null,
+        service_name: service?.name,
+        client_name: clientName.trim(),
+        client_email: clientEmail.trim(),
+        client_phone: clientPhone.trim() || null,
+        tenant_id: tenant.id,
       }),
     });
 
     const data = await res.json();
-
     if (!res.ok) {
-      setError(data.error);
-      toast(data.error, "error");
+      const msg = data.error || "Error al crear el turno";
+      setError(msg);
+      toast(msg, "error");
       setLoading(false);
       return;
     }
 
-    setSuccessCount(data.count);
     setSuccess(true);
-    toast(
-      `${data.count} turno${data.count > 1 ? "s" : ""} creado${data.count > 1 ? "s" : ""} correctamente`,
-      "success"
-    );
+    toast("Turno reservado", "success");
     setLoading(false);
-    setTimeout(() => router.push("/dashboard"), 2500);
   };
 
   if (success) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-400" />
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: `${primaryColor}20` }}
+          >
+            <CheckCircle className="w-8 h-8" style={{ color: primaryColor }} />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Turno{successCount > 1 ? "s" : ""} Reservado{successCount > 1 ? "s" : ""}</h2>
-          <p className="text-white/50">
-            {successCount > 1
-              ? `${successCount} turnos creados correctamente`
-              : `${selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: es })} a las ${selectedTime}`
-            }
+          <h2 className="text-2xl font-bold text-white mb-2">Turno Reservado</h2>
+          {selectedDate && (
+            <p className="text-white/50">
+              {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })} a las {selectedTime}
+            </p>
+          )}
+          <p className="text-sm text-white/30 mt-2">
+            Te enviamos un resumen al <span className="text-white/50">{clientEmail}</span>
           </p>
         </div>
       </div>
@@ -198,28 +197,30 @@ export default function ReservarContent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-2 mb-8">
-          <CalendarDays className="w-5 h-5 text-emerald-400" />
-          <h1 className="text-xl font-bold text-white">Reservar Turno</h1>
-        </div>
-
-        <div className="flex items-center gap-2 mb-8">
-          {["calendar", "form", "confirm"].map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-                  step === s
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
-                    : "bg-white/5 text-white/40"
-                }`}
-              >
-                {i + 1}
-              </div>
-              {i < 2 && <div className="w-8 h-px bg-white/10" />}
+    <div className="min-h-screen">
+      <div className="border-b border-white/10 bg-black/30 backdrop-blur-xl">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
+          {tenant.logo_url ? (
+            <img src={tenant.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
+          ) : (
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {tenant.name.charAt(0)}
             </div>
-          ))}
+          )}
+          <div>
+            <h1 className="text-lg font-bold text-white">{tenant.name}</h1>
+            <p className="text-xs text-white/40">Reservá tu turno online</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-2 mb-8">
+          <CalendarDays className="w-5 h-5" style={{ color: primaryColor }} />
+          <h1 className="text-xl font-bold text-white">Reservar Turno</h1>
         </div>
 
         {error && (
@@ -251,7 +252,8 @@ export default function ReservarContent() {
             {selectedDate && selectedTime && (
               <button
                 onClick={() => setStep("form")}
-                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl font-medium transition-all shadow-lg"
+                style={{ backgroundColor: primaryColor }}
               >
                 Continuar
                 <ArrowLeft className="w-4 h-4 rotate-180" />
@@ -268,15 +270,18 @@ export default function ReservarContent() {
                 {selectedDate && format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })} - {selectedTime}
               </p>
             </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5">
+                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                  <Scissors className="w-3.5 h-3.5" />
                   Servicio
                 </label>
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all appearance-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 transition-all appearance-none"
+                  style={{ outlineColor: primaryColor }}
                 >
                   {services.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -285,75 +290,73 @@ export default function ReservarContent() {
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5">
-                  Notas (opcional)
+                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5" />
+                  Nombre
                 </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Contanos si tenés alguna observación..."
-                  rows={3}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Tu nombre completo"
+                  required
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
+                  style={{ outlineColor: primaryColor }}
                 />
               </div>
 
-              <div className="bg-white/5 rounded-xl p-4">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => setRecurring(!recurring)}
-                    className={`w-10 h-6 rounded-full transition-all shrink-0 ${
-                      recurring ? "bg-emerald-500" : "bg-white/10"
-                    }`}
-                  >
-                    <div
-                      className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
-                        recurring ? "translate-x-5" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                  <div>
-                    <p className="text-sm font-medium text-white">Repetir semanalmente</p>
-                    <p className="text-xs text-white/40">
-                      Crear turnos automáticos todas las semanas
-                    </p>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5" />
+                  Email
                 </label>
-                {recurring && (
-                  <div className="mt-3 pl-[3.25rem]">
-                    <label className="block text-xs font-medium text-white/50 mb-1">
-                      Hasta
-                    </label>
-                    <input
-                      type="date"
-                      value={recurringEndDate}
-                      onChange={(e) => setRecurringEndDate(e.target.value)}
-                      min={selectedDate ? format(new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd") : undefined}
-                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    />
-                  </div>
-                )}
+                <input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  required
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
+                  style={{ outlineColor: primaryColor }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5" />
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="+54 11 1234 5678"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
+                  style={{ outlineColor: primaryColor }}
+                />
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setStep("calendar")}
-                  className="flex-1 px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 hover:text-white transition-all border border-white/10"
+                  className="flex-1 px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 transition-all border border-white/10"
                 >
                   Volver
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl font-medium transition-all shadow-lg disabled:opacity-50"
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <ClipboardList className="w-4 h-4" />
+                      <CheckCircle className="w-4 h-4" />
                       Confirmar Turno
                     </>
                   )}

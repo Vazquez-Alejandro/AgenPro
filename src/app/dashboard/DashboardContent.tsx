@@ -38,11 +38,10 @@ export default function DashboardContent() {
   const supabase = useRef(createClient()).current;
 
   const fetchAppointments = async () => {
-    const { data } = await supabase
-      .from("appointments")
-      .select("*")
-      .order("date", { ascending: true })
-      .order("time", { ascending: true });
+    const { data: { user } } = await supabase.auth.getUser();
+    let query = supabase.from("appointments").select("*");
+    if (user) query = query.eq("user_id", user.id);
+    const { data } = await query.order("date", { ascending: true }).order("time", { ascending: true });
     setAppointments(data || []);
     setLoading(false);
   };
@@ -220,7 +219,7 @@ export default function DashboardContent() {
                               : "bg-blue-500/20 text-blue-400"
                           }`}
                         >
-                          {apt.time} {apt.service}
+                          {apt.time} {apt.service || apt.service_id?.slice(0, 8)}
                         </div>
                       ))}
                       {dayAppts.length > 3 && (
@@ -256,8 +255,8 @@ export default function DashboardContent() {
                         <Clock className="w-4 h-4 text-emerald-400" />
                         <span className="text-white/70">{apt.time} hs</span>
                       </div>
-                      <p className="text-sm text-white/50">{apt.service}</p>
-                      {apt.recurring && (
+                      <p className="text-sm text-white/50">{apt.service || apt.service_id?.slice(0, 8)}</p>
+                      {apt.is_recurring && (
                         <p className="text-xs text-emerald-400/60">
                           Semanal{" "}
                           {apt.recurring_end_date

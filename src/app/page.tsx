@@ -27,7 +27,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 relative">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent light:from-black light:via-black light:to-black/60">
                 Reservá tu turno
               </span>
               <br />
@@ -39,12 +39,12 @@ export default function Home() {
               Gestioná tus reservas online sin complicaciones. Elegí el día y
               horario que mejor te quede.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-4">
+            <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
               <Link
-                href="/reservar"
+                href="/turno"
                 className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
               >
-                Reservar Ahora
+                Sacar Turno
               </Link>
               <Link
                 href="/login"
@@ -53,6 +53,9 @@ export default function Home() {
                 Mis Turnos
               </Link>
             </div>
+            <p className="mt-4 text-sm text-white/30">
+              Sin registro. Rápido y sencillo.
+            </p>
           </div>
         </div>
       </section>

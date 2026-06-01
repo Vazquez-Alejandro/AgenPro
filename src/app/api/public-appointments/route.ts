@@ -1,0 +1,134 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { sendWhatsApp } from "@/lib/whatsapp";
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export async function POST(request: Request) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+
+  const rateCheck = checkRateLimit(`public-booking:${ip}`, 5, 60000);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:
+          "Demasiadas reservas. Esperá un minuto antes de intentar de nuevo.",
+      },
+      { status: 429 }
+    );
+  }
+
+  const body = await request.json();
+  const {
+    date,
+    time,
+    service_id,
+    client_name,
+    client_email,
+    client_phone,
+    payment_intent_id,
+    payment_method,
+    tenant_id,
+  } = body;
+
+  if (!date || !time || !client_name || !client_email) {
+    return NextResponse.json(
+      { error: "Faltan campos requeridos" },
+      { status: 400 }
+    );
+  }
+
+  const supabase = await createClient();
+
+  const { data: service } = await supabase
+    .from("services")
+    .select("name")
+    .eq("id", service_id)
+    .single();
+
+  if (tenant_id) {
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("turnos_limit")
+      .eq("id", tenant_id)
+      .single();
+
+    if (tenant) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      const startStr = startOfMonth.toISOString().split("T")[0];
+
+      const { count } = await supabase
+        .from("appointments")
+        .select("*", { count: "exact", head: true })
+        .eq("tenant_id", tenant_id)
+        .gte("date", startStr);
+
+      if (count != null && count >= tenant.turnos_limit) {
+        return NextResponse.json(
+          { error: "El negocio alcanzó su límite mensual de turnos." },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
+  const appointment = {
+    date,
+    time,
+    service_id: service_id || null,
+    service: service?.name || "",
+    status: "confirmed",
+    client_name,
+    client_email,
+    client_phone: client_phone || null,
+    payment_id: payment_intent_id || null,
+    payment_method: payment_method || null,
+    payment_status: payment_method ? "paid" : "unpaid",
+    tenant_id: tenant_id || null,
+    is_recurring: false,
+  };
+
+  const { error } = await supabase.from("appointments").insert(appointment);
+
+  if (error) {
+    return NextResponse.json(
+      {
+        error: error.message.includes("unique")
+          ? "Ese horario ya fue reservado"
+          : error.message,
+      },
+      { status: 409 }
+    );
+  }
+
+  if (client_phone) {
+    const serviceName = service?.name || "Turno";
+    const dateFormatted = formatDate(date);
+    const msg = `✅ *Turno Confirmado* 🎉
+
+Hola ${client_name}, tu turno fue reservado con éxito.
+
+📅 *Fecha:* ${dateFormatted}
+⏰ *Horario:* ${time} hs
+💇 *Servicio:* ${serviceName}
+
+Te esperamos!`;
+
+    sendWhatsApp(client_phone, msg).catch(() => {});
+  }
+
+  return NextResponse.json({ success: true });
+}

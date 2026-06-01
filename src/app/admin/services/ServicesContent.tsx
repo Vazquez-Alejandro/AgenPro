@@ -3,49 +3,67 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Service } from "@/types";
-import { Plus, Save, Loader2, X } from "lucide-react";
+import { Plus, Loader2, X } from "lucide-react";
+import { useTenant } from "@/contexts/TenantContext";
+
+function formatPrice(cents: number) {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+  }).format(cents / 100);
+}
 
 export default function ServicesContent() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
   const [newDuration, setNewDuration] = useState(60);
+  const [newPrice, setNewPrice] = useState(0);
   const supabase = useRef(createClient()).current;
+  const { tenant } = useTenant();
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [tenant]);
 
   const fetchServices = async () => {
+    if (!tenant) { setLoading(false); return; }
     const { data } = await supabase
       .from("services")
       .select("*")
+      .eq("tenant_id", tenant.id)
       .order("name");
     if (data) setServices(data);
     setLoading(false);
   };
 
   const toggleActive = async (service: Service) => {
+    if (!tenant) return;
     await supabase
       .from("services")
-      .update({ is_active: !service.is_active })
-      .eq("id", service.id);
+      .update({ active: !service.active })
+      .eq("id", service.id)
+      .eq("tenant_id", tenant.id);
     fetchServices();
   };
 
   const addService = async () => {
-    if (!newName.trim()) return;
+    if (!newName.trim() || !tenant) return;
     await supabase.from("services").insert({
       name: newName.trim(),
       duration: newDuration,
+      price: newPrice,
+      tenant_id: tenant.id,
     });
     setNewName("");
     setNewDuration(60);
+    setNewPrice(0);
     fetchServices();
   };
 
   const deleteService = async (id: string) => {
-    await supabase.from("services").delete().eq("id", id);
+    if (!tenant) return;
+    await supabase.from("services").delete().eq("id", id).eq("tenant_id", tenant.id);
     fetchServices();
   };
 
@@ -88,6 +106,19 @@ export default function ServicesContent() {
               className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1">
+              Precio ($)
+            </label>
+            <input
+              type="number"
+              value={newPrice}
+              onChange={(e) => setNewPrice(parseInt(e.target.value) || 0)}
+              min={0}
+              step={100}
+              className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+          </div>
           <button
             onClick={addService}
             disabled={!newName.trim()}
@@ -110,22 +141,24 @@ export default function ServicesContent() {
               key={s.id}
               className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl"
             >
-              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                 <button
                   onClick={() => toggleActive(s)}
                   className={`w-10 h-6 rounded-full transition-all ${
-                    s.is_active ? "bg-emerald-500" : "bg-white/10"
+                    s.active ? "bg-emerald-500" : "bg-white/10"
                   }`}
                 >
                   <div
                     className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
-                      s.is_active ? "translate-x-5" : "translate-x-1"
+                      s.active ? "translate-x-5" : "translate-x-1"
                     }`}
                   />
                 </button>
                 <div>
                   <p className="text-white font-medium">{s.name}</p>
-                  <p className="text-sm text-white/40">{s.duration} min</p>
+                  <p className="text-sm text-white/40">
+                    {s.duration} min &middot; {formatPrice(s.price)}
+                  </p>
                 </div>
               </div>
               <button

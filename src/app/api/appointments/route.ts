@@ -33,6 +33,41 @@ export async function POST(request: Request) {
     );
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
+
+  const tenantId = profile?.tenant_id;
+
+  if (tenantId) {
+    const { data: tenant, error: tenantErr } = await supabase
+      .from("tenants")
+      .select("turnos_limit")
+      .eq("id", tenantId)
+      .single();
+
+    if (!tenantErr && tenant) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      const startStr = startOfMonth.toISOString().split("T")[0];
+
+      const { count } = await supabase
+        .from("appointments")
+        .select("*", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
+        .gte("date", startStr);
+
+      if (count != null && count >= tenant.turnos_limit) {
+        return NextResponse.json(
+          { error: "Alcanzaste el límite de turnos de tu plan. Actualizalo en Configuración." },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   const datesToCreate = [date];
   if (recurring && recurring_end_date) {
     const end = new Date(recurring_end_date);
@@ -46,13 +81,14 @@ export async function POST(request: Request) {
 
   const appointments = datesToCreate.map((d: string) => ({
     user_id: user.id,
+    tenant_id: profile?.tenant_id || null,
     date: d,
     time,
-    service,
+    service: service || null,
     service_id,
     notes: notes || null,
     status: "confirmed",
-    recurring: !!recurring,
+    is_recurring: !!recurring,
     recurring_end_date: recurring ? recurring_end_date || null : null,
   }));
 

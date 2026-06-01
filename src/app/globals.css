@@ -7,13 +7,82 @@
 
 @custom-variant light (&:where(.light, .light *));
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+:root, .dark {
+  --text-white-100: rgb(255 255 255);
+  --text-white-90: rgb(255 255 255 / 0.9);
+  --text-white-80: rgb(255 255 255 / 0.8);
+  --text-white-70: rgb(255 255 255 / 0.7);
+  --text-white-60: rgb(255 255 255 / 0.6);
+  --text-white-50: rgb(255 255 255 / 0.5);
+  --text-white-40: rgb(255 255 255 / 0.4);
+  --text-white-30: rgb(255 255 255 / 0.3);
+  --text-white-15: rgb(255 255 255 / 0.15);
+  --text-white-10: rgb(255 255 255 / 0.1);
+  --bg-white-5: rgb(255 255 255 / 0.05);
+  --bg-white-10: rgb(255 255 255 / 0.1);
+  --bg-white-02: rgb(255 255 255 / 0.02);
+  --bg-white-04: rgb(255 255 255 / 0.04);
+  --border-white-5: rgb(255 255 255 / 0.05);
+  --border-white-10: rgb(255 255 255 / 0.1);
+  --bg-black-50: rgb(0 0 0 / 0.5);
+  --bg-black-30: rgb(0 0 0 / 0.3);
+  --bg-option: #1a1a1a;
+  --scrollbar: rgba(255, 255, 255, 0.1);
 }
 
-.light * {
-  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+.light {
+  --text-white-100: rgb(0 0 0);
+  --text-white-90: rgb(0 0 0 / 0.9);
+  --text-white-80: rgb(0 0 0 / 0.8);
+  --text-white-70: rgb(0 0 0 / 0.7);
+  --text-white-60: rgb(0 0 0 / 0.6);
+  --text-white-50: rgb(0 0 0 / 0.5);
+  --text-white-40: rgb(0 0 0 / 0.4);
+  --text-white-30: rgb(0 0 0 / 0.3);
+  --text-white-15: rgb(0 0 0 / 0.15);
+  --text-white-10: rgb(0 0 0 / 0.1);
+  --bg-white-5: rgb(0 0 0 / 0.05);
+  --bg-white-10: rgb(0 0 0 / 0.1);
+  --bg-white-02: rgb(0 0 0 / 0.02);
+  --bg-white-04: rgb(0 0 0 / 0.04);
+  --border-white-5: rgb(0 0 0 / 0.05);
+  --border-white-10: rgb(0 0 0 / 0.1);
+  --bg-black-50: rgb(255 255 255 / 0.8);
+  --bg-black-30: rgb(255 255 255 / 0.5);
+  --bg-option: #ffffff;
+  --scrollbar: rgba(0, 0, 0, 0.1);
+}
+
+.text-white\/90 { color: var(--text-white-90); }
+.text-white\/80 { color: var(--text-white-80); }
+.text-white\/70 { color: var(--text-white-70); }
+.text-white\/60 { color: var(--text-white-60); }
+.text-white\/50 { color: var(--text-white-50); }
+.text-white\/40 { color: var(--text-white-40); }
+.text-white\/30 { color: var(--text-white-30); }
+.text-white\/15 { color: var(--text-white-15); }
+.text-white\/10 { color: var(--text-white-10); }
+.bg-white\/5 { background-color: var(--bg-white-5); }
+.bg-white\/10 { background-color: var(--bg-white-10); }
+.bg-white\/\[0\.02\] { background-color: var(--bg-white-02); }
+.bg-white\/\[0\.04\] { background-color: var(--bg-white-04); }
+.border-white\/5 { border-color: var(--border-white-5); }
+.border-white\/10 { border-color: var(--border-white-10); }
+.text-white { color: var(--text-white-100); }
+.hover\:text-white:hover { color: var(--text-white-100); }
+.bg-black\/50 { background-color: var(--bg-black-50); }
+.bg-black\/30 { background-color: var(--bg-black-30); }
+.hover\:bg-white\/5:hover { background-color: var(--bg-white-5); }
+.hover\:bg-white\/10:hover { background-color: var(--bg-white-10); }
+.hover\:border-white\/10:hover { border-color: var(--border-white-10); }
+
+option, select option {
+  background-color: var(--bg-option);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
 body {
