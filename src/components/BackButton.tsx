@@ -1,15 +1,25 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function BackButton({ href }: { href?: string }) {
-  const router = useRouter();
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors mb-4 cursor-pointer"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver
+      </Link>
+    );
+  }
 
   return (
     <button
-      onClick={() => (href ? router.push(href) : router.back())}
-      className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors mb-4"
+      onClick={() => window.history.back()}
+      className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors mb-4 cursor-pointer"
     >
       <ArrowLeft className="w-4 h-4" />
       Volver
