@@ -10,16 +10,25 @@ export interface Tenant {
   features: Record<string, boolean>;
   deposit_percent: number;
   default_cleaning_time: number;
+  custom_fields: CustomField[];
   created_at: string;
 }
 
 export interface Profile {
   id: string;
   tenant_id: string | null;
-  role: "owner" | "admin" | "staff";
+  role: "owner" | "admin" | "staff" | "client";
   full_name: string | null;
   is_admin: boolean;
+  custom_data: Record<string, string>;
   created_at: string;
+}
+
+export interface CustomField {
+  name: string;
+  type: "text" | "number" | "date" | "tel";
+  required: boolean;
+  order: number;
 }
 
 export interface Appointment {

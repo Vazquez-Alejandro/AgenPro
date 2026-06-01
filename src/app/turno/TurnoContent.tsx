@@ -20,10 +20,13 @@ import {
   Phone,
   Scissors,
   CreditCard,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useLang } from "@/contexts/LangContext";
 import { useTenant } from "@/contexts/TenantContext";
+import Link from "next/link";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
@@ -54,6 +57,8 @@ function formatPrice(cents: number) {
 
 export default function TurnoContent() {
   const { t } = useLang();
+  const [user, setUser] = useState<any | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [step, setStep] = useState<"calendar" | "form" | "payment" | "confirm">(
     "calendar"
   );
@@ -75,6 +80,24 @@ export default function TurnoContent() {
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const { tenant } = useTenant();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUser(data.user);
+        supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.full_name) setClientName(profile.full_name);
+          });
+        setClientEmail(data.user.email || "");
+      }
+      setAuthLoaded(true);
+    });
+  }, []);
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
 
@@ -269,6 +292,7 @@ export default function TurnoContent() {
         date: dateStr,
         time: selectedTime,
         service_id: selectedServiceId,
+        user_id: user?.id,
         client_name: clientName.trim(),
         client_email: clientEmail.trim(),
         client_phone: clientPhone.trim() || null,
@@ -296,6 +320,47 @@ export default function TurnoContent() {
   };
 
   const stepNames = ["calendar", "form", "payment", "confirm"] as const;
+
+  if (!authLoaded) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+        <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-sm">
+          <BackButton href="/" />
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 mt-4">
+            <UserPlus className="w-8 h-8 text-emerald-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Reservá tu turno</h2>
+          <p className="text-white/50 mb-6">
+            Necesitás crear una cuenta o iniciar sesión para poder reservar.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/register-client"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+            >
+              <UserPlus className="w-4 h-4" />
+              Crear cuenta
+            </Link>
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 text-white/70 rounded-xl font-medium hover:bg-white/10 transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              Iniciar sesión
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (

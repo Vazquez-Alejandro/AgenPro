@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
-import type { PlanDefinition } from "@/types";
+import type { PlanDefinition, CustomField } from "@/types";
 import { FEATURES, DEFAULT_FEATURES } from "@/types";
 
 const PLAN_COLORS: Record<string, string> = {
@@ -76,6 +76,11 @@ export default function SettingsContent() {
   const [depositPercent, setDepositPercent] = useState(0);
   const [defaultCleaningTime, setDefaultCleaningTime] = useState(0);
   const [savingFeatures, setSavingFeatures] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [newFieldName, setNewFieldName] = useState("");
+  const [newFieldType, setNewFieldType] = useState<CustomField["type"]>("text");
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [savingFields, setSavingFields] = useState(false);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +94,7 @@ export default function SettingsContent() {
       setFeatures({ ...DEFAULT_FEATURES, ...(tenant.features || {}) });
       setDepositPercent(tenant.deposit_percent || 0);
       setDefaultCleaningTime(tenant.default_cleaning_time || 0);
+      setCustomFields(tenant.custom_fields || []);
     }
     fetchPlans();
   }, [tenant]);
@@ -180,6 +186,35 @@ export default function SettingsContent() {
       .update({ features: { ...features, [key]: next } })
       .eq("id", tenant.id);
     setSavingFeatures(false);
+  };
+
+  const saveCustomFields = async (fields: CustomField[]) => {
+    if (!tenant) return;
+    setSavingFields(true);
+    const ordered = fields.map((f, i) => ({ ...f, order: i }));
+    await supabase.from("tenants").update({ custom_fields: ordered }).eq("id", tenant.id);
+    setCustomFields(ordered);
+    setSavingFields(false);
+  };
+
+  const addCustomField = () => {
+    if (!newFieldName.trim()) return;
+    const field: CustomField = {
+      name: newFieldName.trim(),
+      type: newFieldType,
+      required: newFieldRequired,
+      order: customFields.length,
+    };
+    const next = [...customFields, field];
+    setNewFieldName("");
+    setNewFieldType("text");
+    setNewFieldRequired(false);
+    saveCustomFields(next);
+  };
+
+  const removeCustomField = (index: number) => {
+    const next = customFields.filter((_, i) => i !== index);
+    saveCustomFields(next);
   };
 
   if (tenantLoading) {
@@ -311,6 +346,82 @@ export default function SettingsContent() {
           )}
           {saved ? "Guardado" : "Guardar Cambios"}
         </button>
+      </div>
+
+      {/* Custom Fields */}
+      <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+        <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <Users className="w-4 h-4 text-emerald-400" />
+          Campos personalizados (registro de clientes)
+        </h2>
+        <p className="text-xs text-white/30 mb-4">
+          Definí campos adicionales que los clientes completarán al registrarse. Ej: DNI, dirección, fecha de nacimiento.
+        </p>
+
+        {customFields.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {customFields.map((field, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 bg-white/[0.02] border border-white/5 rounded-xl px-4 py-2.5"
+              >
+                <span className="text-sm text-white font-medium flex-1">{field.name}</span>
+                <span className="text-[10px] text-white/30 uppercase tracking-wider">{field.type}</span>
+                {field.required && (
+                  <span className="text-[10px] text-red-400 font-medium">Obligatorio</span>
+                )}
+                <button
+                  onClick={() => removeCustomField(i)}
+                  className="text-white/20 hover:text-red-400 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-white/50 mb-1">Nombre del campo</label>
+            <input
+              type="text"
+              value={newFieldName}
+              onChange={(e) => setNewFieldName(e.target.value)}
+              placeholder="Ej: DNI"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1">Tipo</label>
+            <select
+              value={newFieldType}
+              onChange={(e) => setNewFieldType(e.target.value as CustomField["type"])}
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+            >
+              <option value="text">Texto</option>
+              <option value="number">Número</option>
+              <option value="date">Fecha</option>
+              <option value="tel">Teléfono</option>
+            </select>
+          </div>
+          <label className="flex items-center gap-1.5 pb-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={newFieldRequired}
+              onChange={(e) => setNewFieldRequired(e.target.checked)}
+              className="accent-emerald-500"
+            />
+            <span className="text-xs text-white/50">Oblig.</span>
+          </label>
+          <button
+            onClick={addCustomField}
+            disabled={savingFields || !newFieldName.trim()}
+            className="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+          >
+            {savingFields ? <Loader2 className="w-4 h-4 animate-spin" /> : "+"}
+          </button>
+        </div>
       </div>
 
       {/* Plan */}

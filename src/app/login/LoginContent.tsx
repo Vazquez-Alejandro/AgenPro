@@ -110,12 +110,20 @@ export default function LoginContent() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-white/40">
-          ¿No tenés cuenta?{" "}
-          <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-            Registrate
-          </Link>
-        </p>
+        <div className="mt-6 text-center text-sm text-white/40 space-y-1">
+          <p>
+            ¿Querés registrar tu negocio?{" "}
+            <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+              Crear cuenta profesional
+            </Link>
+          </p>
+          <p>
+            ¿Querés reservar un turno?{" "}
+            <Link href="/register-client" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+              Crear cuenta de cliente
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

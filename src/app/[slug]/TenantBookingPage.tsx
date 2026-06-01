@@ -16,8 +16,11 @@ import {
   Phone,
   Scissors,
   Clock,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import Link from "next/link";
 
 function generateTimeSlots(avail: Availability): string[] {
   const slots: string[] = [];
@@ -39,6 +42,8 @@ export default function TenantBookingPage({
 }: {
   tenant: Tenant;
 }) {
+  const [user, setUser] = useState<any | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [step, setStep] = useState<"calendar" | "form" | "confirm">("calendar");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -55,6 +60,24 @@ export default function TenantBookingPage({
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUser(data.user);
+        supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile?.full_name) setClientName(profile.full_name);
+          });
+        setClientEmail(data.user.email || "");
+      }
+      setAuthLoaded(true);
+    });
+  }, []);
 
   const primaryColor = tenant.primary_color || "#10b981";
 
@@ -190,6 +213,7 @@ export default function TenantBookingPage({
         time: selectedTime,
         service_id: selectedServiceId,
         service_name: service?.name,
+        user_id: user?.id,
         client_name: clientName.trim(),
         client_email: clientEmail.trim(),
         client_phone: clientPhone.trim() || null,
@@ -210,6 +234,46 @@ export default function TenantBookingPage({
     toast("Turno reservado", "success");
     setLoading(false);
   };
+
+  if (!authLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 mt-4">
+            <UserPlus className="w-8 h-8 text-emerald-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Reservá tu turno</h2>
+          <p className="text-white/50 mb-6">
+            Necesitás crear una cuenta o iniciar sesión para poder reservar en {tenant.name}.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href={`/register-client?tenant_id=${tenant.id}&redirect=/${tenant.slug}`}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+            >
+              <UserPlus className="w-4 h-4" />
+              Crear cuenta
+            </Link>
+            <Link
+              href={`/login?redirect=/${tenant.slug}`}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 text-white/70 rounded-xl font-medium hover:bg-white/10 transition-all"
+            >
+              <LogIn className="w-4 h-4" />
+              Iniciar sesión
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (
