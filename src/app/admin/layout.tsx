@@ -8,6 +8,7 @@ import {
   Ban,
   Scissors,
   Settings,
+  UserX,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ const links = [
   { href: "/admin/agenda", label: "Agenda", icon: Calendar },
   { href: "/admin/availability", label: "Horarios", icon: Clock },
   { href: "/admin/blocked-dates", label: "Días Bloqueados", icon: Ban },
+  { href: "/admin/blacklist", label: "Clientes Bloqueados", icon: UserX },
   { href: "/admin/services", label: "Servicios", icon: Scissors },
   { href: "/admin/settings", label: "Configuración", icon: Settings },
 ];

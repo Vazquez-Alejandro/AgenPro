@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendWhatsApp } from "@/lib/whatsapp";
+import crypto from "crypto";
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + "T12:00:00");
@@ -23,8 +24,7 @@ export async function POST(request: Request) {
   if (!rateCheck.allowed) {
     return NextResponse.json(
       {
-        error:
-          "Demasiadas reservas. Esperá un minuto antes de intentar de nuevo.",
+        error: "Demasiadas reservas. Esperá un minuto antes de intentar de nuevo.",
       },
       { status: 429 }
     );
@@ -52,38 +52,63 @@ export async function POST(request: Request) {
 
   const supabase = await createClient();
 
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("turnos_limit, features, deposit_percent, default_cleaning_time")
+    .eq("id", tenant_id)
+    .single();
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
+  }
+
+  const features = { ...tenant.features } as Record<string, boolean>;
+
+  // --- Blacklist check (Plan Inicial+) ---
+  if (features.blacklist && client_phone) {
+    const { data: blocked } = await supabase
+      .from("client_blacklist")
+      .select("id")
+      .eq("tenant_id", tenant_id)
+      .eq("phone", client_phone)
+      .maybeSingle();
+
+    if (blocked) {
+      return NextResponse.json(
+        { error: "No podés reservar turnos en este negocio." },
+        { status: 403 }
+      );
+    }
+  }
+
+  // --- Limit check ---
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  const startStr = startOfMonth.toISOString().split("T")[0];
+
+  const { count } = await supabase
+    .from("appointments")
+    .select("*", { count: "exact", head: true })
+    .eq("tenant_id", tenant_id)
+    .gte("date", startStr);
+
+  if (count != null && count >= tenant.turnos_limit) {
+    return NextResponse.json(
+      { error: "El negocio alcanzó su límite mensual de turnos." },
+      { status: 403 }
+    );
+  }
+
   const { data: service } = await supabase
     .from("services")
     .select("name")
     .eq("id", service_id)
     .single();
 
-  if (tenant_id) {
-    const { data: tenant } = await supabase
-      .from("tenants")
-      .select("turnos_limit")
-      .eq("id", tenant_id)
-      .single();
-
-    if (tenant) {
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      const startStr = startOfMonth.toISOString().split("T")[0];
-
-      const { count } = await supabase
-        .from("appointments")
-        .select("*", { count: "exact", head: true })
-        .eq("tenant_id", tenant_id)
-        .gte("date", startStr);
-
-      if (count != null && count >= tenant.turnos_limit) {
-        return NextResponse.json(
-          { error: "El negocio alcanzó su límite mensual de turnos." },
-          { status: 403 }
-        );
-      }
-    }
-  }
+  // --- Confirmation token (Plan Premium) ---
+  const confirmationToken = features.confirmation_button
+    ? crypto.randomBytes(24).toString("hex")
+    : null;
 
   const appointment = {
     date,
@@ -99,6 +124,7 @@ export async function POST(request: Request) {
     payment_status: payment_method ? "paid" : "unpaid",
     tenant_id: tenant_id || null,
     is_recurring: false,
+    confirmation_token: confirmationToken,
   };
 
   const { error } = await supabase.from("appointments").insert(appointment);
@@ -114,18 +140,19 @@ export async function POST(request: Request) {
     );
   }
 
+  // --- WhatsApp with confirmation button (Plan Premium) ---
   if (client_phone) {
     const serviceName = service?.name || "Turno";
     const dateFormatted = formatDate(date);
-    const msg = `✅ *Turno Confirmado* 🎉
+    let msg = `✅ *Turno Confirmado* 🎉\n\nHola ${client_name}, tu turno fue reservado con éxito.\n\n📅 *Fecha:* ${dateFormatted}\n⏰ *Horario:* ${time} hs\n💇 *Servicio:* ${serviceName}`;
 
-Hola ${client_name}, tu turno fue reservado con éxito.
-
-📅 *Fecha:* ${dateFormatted}
-⏰ *Horario:* ${time} hs
-💇 *Servicio:* ${serviceName}
-
-Te esperamos!`;
+    if (confirmationToken) {
+      const confirmUrl = `${process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"}/api/confirm-appointment?token=${confirmationToken}`;
+      const cancelUrl = `${process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"}/api/cancel-appointment?token=${confirmationToken}`;
+      msg += `\n\n👉 *Confirmá tu turno:* ${confirmUrl}\n❌ *Cancelar:* ${cancelUrl}`;
+    } else {
+      msg += `\n\nTe esperamos!`;
+    }
 
     sendWhatsApp(client_phone, msg).catch(() => {});
   }

@@ -7,6 +7,9 @@ export interface Tenant {
   subscription_status: string;
   turnos_limit: number;
   staff_limit: number;
+  features: Record<string, boolean>;
+  deposit_percent: number;
+  default_cleaning_time: number;
   created_at: string;
 }
 
@@ -40,6 +43,10 @@ export interface Appointment {
   recurring_end_date: string | null;
   reminder_24h_sent: boolean;
   reminder_1h_sent: boolean;
+  confirmation_token: string | null;
+  confirmed_at: string | null;
+  no_show: boolean;
+  waitlist_notified: boolean;
   created_at: string;
 }
 
@@ -72,6 +79,28 @@ export interface Service {
   duration: number;
   price: number;
   active: boolean;
+  cleaning_time: number;
+}
+
+export interface BlacklistEntry {
+  id: string;
+  tenant_id: string;
+  phone: string | null;
+  email: string | null;
+  reason: string | null;
+  blocked_at: string;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  tenant_id: string;
+  service_id: string | null;
+  date: string;
+  time: string;
+  client_name: string;
+  client_phone: string | null;
+  client_email: string | null;
+  created_at: string;
 }
 
 export interface PlanDefinition {
@@ -89,7 +118,54 @@ export const PLAN_LIMITS: Record<string, { appointments: number; staff: number }
   premium: { appointments: 999999, staff: 999999 },
 };
 
+export const FEATURES: Record<string, { label: string; desc: string; plan: string }> = {
+  blacklist: {
+    label: "Bloqueo de Clientes",
+    desc: "Bloqueá números de teléfono o emails para que no puedan reservar.",
+    plan: "inicial",
+  },
+  cleaning_time: {
+    label: "Margen de Limpieza",
+    desc: "Tiempo muerto automático entre turnos para desinfección o alistamiento.",
+    plan: "profesional",
+  },
+  smart_assignment: {
+    label: "Asignación Inteligente",
+    desc: "Asigná turnos automáticamente al empleado con más disponibilidad.",
+    plan: "profesional",
+  },
+  double_booking: {
+    label: "Sobreturnos Manuales",
+    desc: "Habilitá turnos extras desde el panel para clientes VIP sin romper la agenda.",
+    plan: "profesional",
+  },
+  mandatory_deposit: {
+    label: "Seña Obligatoria",
+    desc: "El cliente paga un % del servicio para confirmar el turno. Reduce ausentismo.",
+    plan: "premium",
+  },
+  no_show_tracking: {
+    label: "Historial de No-Show",
+    desc: "Estadísticas de clientes que faltan, días rentables y rendimiento por empleado.",
+    plan: "premium",
+  },
+  confirmation_button: {
+    label: "Confirmación por WhatsApp",
+    desc: "El cliente confirma o cancela desde el link del mensaje. Cancela con 24hs → avisa a lista de espera.",
+    plan: "premium",
+  },
+};
+
+export const DEFAULT_FEATURES: Record<string, boolean> = {
+  blacklist: false,
+  cleaning_time: false,
+  smart_assignment: false,
+  double_booking: false,
+  mandatory_deposit: false,
+  no_show_tracking: false,
+  confirmation_button: false,
+};
+
 export const DAY_NAMES = [
-  "Domingo", "Lunes", "Martes", "Miércoles",
   "Jueves", "Viernes", "Sábado",
 ];

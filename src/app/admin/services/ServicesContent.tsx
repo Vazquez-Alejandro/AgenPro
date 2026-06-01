@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Service } from "@/types";
-import { Plus, Loader2, X } from "lucide-react";
+import { Plus, Loader2, X, Clock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
+import { useToast } from "@/contexts/ToastContext";
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -19,8 +20,10 @@ export default function ServicesContent() {
   const [newName, setNewName] = useState("");
   const [newDuration, setNewDuration] = useState(60);
   const [newPrice, setNewPrice] = useState(0);
+  const [newCleaning, setNewCleaning] = useState(0);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchServices();
@@ -53,11 +56,13 @@ export default function ServicesContent() {
       name: newName.trim(),
       duration: newDuration,
       price: newPrice,
+      cleaning_time: newCleaning,
       tenant_id: tenant.id,
     });
     setNewName("");
     setNewDuration(60);
     setNewPrice(0);
+    setNewCleaning(0);
     fetchServices();
   };
 
@@ -119,6 +124,19 @@ export default function ServicesContent() {
               className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium text-white/50 mb-1 flex items-center gap-1">
+              <Clock className="w-3 h-3" /> Limpieza (min)
+            </label>
+            <input
+              type="number"
+              value={newCleaning}
+              onChange={(e) => setNewCleaning(parseInt(e.target.value) || 0)}
+              min={0}
+              max={60}
+              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+          </div>
           <button
             onClick={addService}
             disabled={!newName.trim()}
@@ -158,6 +176,7 @@ export default function ServicesContent() {
                   <p className="text-white font-medium">{s.name}</p>
                   <p className="text-sm text-white/40">
                     {s.duration} min &middot; {formatPrice(s.price)}
+                    {s.cleaning_time > 0 && ` &middot; +${s.cleaning_time}min limpieza`}
                   </p>
                 </div>
               </div>

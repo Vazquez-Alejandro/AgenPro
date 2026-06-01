@@ -123,14 +123,53 @@ export default function TenantBookingPage({
   const fetchDisabledSlots = async () => {
     if (!selectedDate) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
-    const { data } = await supabase
+    const { data: appointments } = await supabase
       .from("appointments")
-      .select("time")
+      .select("time, service_id")
       .eq("tenant_id", tenant.id)
       .eq("date", dateStr)
       .neq("status", "cancelled");
-    if (data) setDisabledSlots(data.map((a: { time: string }) => a.time));
+
+    const blocked: Set<string> = new Set((appointments || []).map((a) => a.time));
+
+    if (appointments && appointments.length > 0) {
+      const { data: svcs } = await supabase
+        .from("services")
+        .select("id, duration, cleaning_time")
+        .eq("tenant_id", tenant.id);
+
+      const { data: avail } = await supabase
+        .from("availability")
+        .select("slot_duration")
+        .eq("tenant_id", tenant.id)
+        .eq("day_of_week", getDay(selectedDate))
+        .eq("enabled", true)
+        .single();
+
+      const slotDur = (avail as Availability | null)?.slot_duration || 60;
+
+      for (const apt of appointments) {
+        const aptMinutes = timeToMinutes(apt.time);
+        const svc = svcs?.find((s) => s.id === apt.service_id);
+        const aptDuration = svc?.duration || 60;
+        const aptCleaning = svc?.cleaning_time || 0;
+        const aptEnd = aptMinutes + aptDuration + aptCleaning;
+
+        for (let m = aptMinutes; m < aptEnd; m += slotDur) {
+          const h = Math.floor(m / 60);
+          const min = m % 60;
+          blocked.add(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+        }
+      }
+    }
+
+    setDisabledSlots(Array.from(blocked));
   };
+
+  function timeToMinutes(t: string): number {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

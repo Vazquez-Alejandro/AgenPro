@@ -12,10 +12,20 @@ import {
   Crown,
   Check,
   ArrowUp,
+  ToggleLeft,
+  ToggleRight,
+  Ban,
+  Clock,
+  Users,
+  CalendarPlus,
+  CreditCard,
+  BarChart3,
+  MessageSquare,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
 import type { PlanDefinition } from "@/types";
+import { FEATURES, DEFAULT_FEATURES } from "@/types";
 
 const PLAN_COLORS: Record<string, string> = {
   free: "#6b7280",
@@ -41,6 +51,16 @@ function formatPrice(cents: number) {
   }).format(cents / 100);
 }
 
+const FEATURE_ICONS: Record<string, React.ReactNode> = {
+  blacklist: <Ban className="w-4 h-4" />,
+  cleaning_time: <Clock className="w-4 h-4" />,
+  smart_assignment: <Users className="w-4 h-4" />,
+  double_booking: <CalendarPlus className="w-4 h-4" />,
+  mandatory_deposit: <CreditCard className="w-4 h-4" />,
+  no_show_tracking: <BarChart3 className="w-4 h-4" />,
+  confirmation_button: <MessageSquare className="w-4 h-4" />,
+};
+
 export default function SettingsContent() {
   const { tenant, loading: tenantLoading } = useTenant();
   const [name, setName] = useState("");
@@ -52,6 +72,10 @@ export default function SettingsContent() {
   const [plans, setPlans] = useState<PlanDefinition[]>([]);
   const [saved, setSaved] = useState(false);
   const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [features, setFeatures] = useState<Record<string, boolean>>(DEFAULT_FEATURES);
+  const [depositPercent, setDepositPercent] = useState(0);
+  const [defaultCleaningTime, setDefaultCleaningTime] = useState(0);
+  const [savingFeatures, setSavingFeatures] = useState(false);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +86,9 @@ export default function SettingsContent() {
       setSlug(tenant.slug);
       setPrimaryColor(tenant.primary_color || "#10b981");
       setLogoUrl(tenant.logo_url);
+      setFeatures({ ...DEFAULT_FEATURES, ...(tenant.features || {}) });
+      setDepositPercent(tenant.deposit_percent || 0);
+      setDefaultCleaningTime(tenant.default_cleaning_time || 0);
     }
     fetchPlans();
   }, [tenant]);
@@ -141,6 +168,18 @@ export default function SettingsContent() {
       setTimeout(() => setSaved(false), 2000);
     }
     setSaving(false);
+  };
+
+  const handleToggleFeature = async (key: string) => {
+    if (!tenant) return;
+    const next = !features[key];
+    setFeatures((prev) => ({ ...prev, [key]: next }));
+    setSavingFeatures(true);
+    await supabase
+      .from("tenants")
+      .update({ features: { ...features, [key]: next } })
+      .eq("id", tenant.id);
+    setSavingFeatures(false);
   };
 
   if (tenantLoading) {
@@ -347,6 +386,129 @@ export default function SettingsContent() {
                     {plan.price_monthly_cents === 0 ? "Degradar" : "Seleccionar"}
                   </button>
                 )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+        <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <ToggleRight className="w-4 h-4 text-emerald-400" />
+          Funciones Premium
+        </h2>
+        <p className="text-xs text-white/30 mb-4">
+          Activá features según las necesidades de tu negocio. Todo viene apagado por defecto.
+        </p>
+
+        {/* Deposit percent (Premium) */}
+        {features.mandatory_deposit && (
+          <div className="mb-4 p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+            <label className="block text-xs font-medium text-white/60 mb-1.5">
+              % de seña obligatoria
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={10}
+                max={80}
+                step={5}
+                value={depositPercent}
+                onChange={async (e) => {
+                  const v = parseInt(e.target.value);
+                  setDepositPercent(v);
+                  await supabase
+                    .from("tenants")
+                    .update({ deposit_percent: v })
+                    .eq("id", tenant!.id);
+                }}
+                className="flex-1 accent-emerald-500"
+              />
+              <span className="text-sm text-white font-medium w-12 text-right">{depositPercent}%</span>
+            </div>
+          </div>
+        )}
+
+        {/* Default cleaning time (Profesional) */}
+        {features.cleaning_time && (
+          <div className="mb-4 p-3 bg-white/[0.02] border border-white/5 rounded-xl">
+            <label className="block text-xs font-medium text-white/60 mb-1.5">
+              Margen de limpieza por defecto (minutos)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={0}
+                max={30}
+                step={5}
+                value={defaultCleaningTime}
+                onChange={async (e) => {
+                  const v = parseInt(e.target.value);
+                  setDefaultCleaningTime(v);
+                  await supabase
+                    .from("tenants")
+                    .update({ default_cleaning_time: v })
+                    .eq("id", tenant!.id);
+                }}
+                className="flex-1 accent-emerald-500"
+              />
+              <span className="text-sm text-white font-medium w-12 text-right">{defaultCleaningTime}min</span>
+            </div>
+            <p className="text-[10px] text-white/30 mt-1">
+              También podés ajustarlo por servicio desde la sección Servicios.
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {Object.entries(FEATURES).map(([key, meta]) => {
+            const isOn = features[key];
+            const isAvailable =
+              tenant.subscription_status === "premium" ||
+              (meta.plan === "inicial" && ["inicial", "profesional", "premium"].includes(tenant.subscription_status)) ||
+              (meta.plan === "profesional" && ["profesional", "premium"].includes(tenant.subscription_status)) ||
+              (meta.plan === "premium" && tenant.subscription_status === "premium");
+
+            return (
+              <div
+                key={key}
+                className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                  isOn
+                    ? "border-emerald-500/20 bg-emerald-500/5"
+                    : "border-white/5 bg-white/[0.02]"
+                } ${!isAvailable ? "opacity-40" : ""}`}
+              >
+                <div className="mt-0.5 text-white/40">
+                  {FEATURE_ICONS[key]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-white">{meta.label}</p>
+                    <button
+                      onClick={() => {
+                        if (!isAvailable) {
+                          toast(
+                            `Disponible desde plan ${planDisplayName(meta.plan)}`,
+                            "error"
+                          );
+                          return;
+                        }
+                        handleToggleFeature(key);
+                      }}
+                      disabled={!isAvailable || savingFeatures}
+                      className={`shrink-0 transition-all ${
+                        isOn ? "text-emerald-400" : "text-white/20 hover:text-white/40"
+                      }`}
+                    >
+                      {isOn ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/40 mt-0.5">{meta.desc}</p>
+                  <p className="text-[10px] text-white/20 mt-1">
+                    Plan {planDisplayName(meta.plan)}
+                  </p>
+                </div>
               </div>
             );
           })}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import crypto from "crypto";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -10,17 +11,6 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
-  }
-
-  const rateCheck = checkRateLimit(`booking:${user.id}`, 5, 60000);
-  if (!rateCheck.allowed) {
-    return NextResponse.json(
-      {
-        error:
-          "Demasiadas reservas. Esperá un minuto antes de intentar de nuevo.",
-      },
-      { status: 429 }
-    );
   }
 
   const body = await request.json();
@@ -42,13 +32,16 @@ export async function POST(request: Request) {
   const tenantId = profile?.tenant_id;
 
   if (tenantId) {
-    const { data: tenant, error: tenantErr } = await supabase
+    const { data: tenant } = await supabase
       .from("tenants")
-      .select("turnos_limit")
+      .select("turnos_limit, features, default_cleaning_time")
       .eq("id", tenantId)
       .single();
 
-    if (!tenantErr && tenant) {
+    if (tenant) {
+      const features = { ...tenant.features } as Record<string, boolean>;
+
+      // Limit check
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       const startStr = startOfMonth.toISOString().split("T")[0];
@@ -65,8 +58,27 @@ export async function POST(request: Request) {
           { status: 403 }
         );
       }
+
+      // Blacklist check for authenticated users
+      if (features.blacklist) {
+        const { data: blocked } = await supabase
+          .from("client_blacklist")
+          .select("id")
+          .eq("tenant_id", tenantId)
+          .eq("email", user.email || "")
+          .maybeSingle();
+
+        if (blocked) {
+          return NextResponse.json(
+            { error: "No podés reservar turnos en este negocio." },
+            { status: 403 }
+          );
+        }
+      }
     }
   }
+
+  const confirmationToken = crypto.randomBytes(24).toString("hex");
 
   const datesToCreate = [date];
   if (recurring && recurring_end_date) {
@@ -90,6 +102,7 @@ export async function POST(request: Request) {
     status: "confirmed",
     is_recurring: !!recurring,
     recurring_end_date: recurring ? recurring_end_date || null : null,
+    confirmation_token: confirmationToken,
   }));
 
   const { error } = await supabase.from("appointments").insert(appointments);
