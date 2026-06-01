@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import {
   format,
   startOfMonth,
@@ -111,6 +112,7 @@ export default function DashboardContent() {
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        <BackButton href="/" />
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-white">Mis Turnos</h1>

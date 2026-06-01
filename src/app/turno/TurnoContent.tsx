@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import Calendar from "@/components/Calendar";
 import TimeSlots from "@/components/TimeSlots";
 import PaymentForm from "@/components/PaymentForm";
+import BackButton from "@/components/BackButton";
 import type { Service, Availability } from "@/types";
 import {
   CalendarDays,
@@ -300,6 +301,7 @@ export default function TurnoContent() {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
+          <BackButton href="/" />
           <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
@@ -325,6 +327,7 @@ export default function TurnoContent() {
   return (
     <div className="min-h-[calc(100vh-4rem)] py-8 px-4">
       <div className="max-w-2xl mx-auto">
+        <BackButton href="/" />
         <div className="flex items-center gap-2 mb-8">
           <CalendarDays className="w-5 h-5 text-emerald-400" />
           <h1 className="text-xl font-bold text-white">{t.booking.title}</h1>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { LogIn, Eye, EyeOff } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export default function LoginContent() {
   const [email, setEmail] = useState("");
@@ -43,6 +44,7 @@ export default function LoginContent() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
+        <BackButton href="/" />
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white">Bienvenido</h1>
           <p className="text-white/50 mt-2">Ingresá a tu cuenta</p>

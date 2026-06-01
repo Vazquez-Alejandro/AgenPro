@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
-  UserPlus, Eye, EyeOff, Building2, Globe, Check
+  UserPlus, Eye, EyeOff, Building2, Globe, Check,
 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 const PLANS = [
   {
@@ -170,6 +171,7 @@ export default function RegisterContent() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
+        <BackButton href="/" />
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white">Crear tu Negocio</h1>
           <p className="text-white/50 mt-2">Registrate y empezá a recibir turnos</p>
