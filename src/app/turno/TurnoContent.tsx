@@ -79,24 +79,27 @@ export default function TurnoContent() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
-  const { tenant } = useTenant();
+  const { tenant, loading: tenantLoading } = useTenant();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUser(data.user);
-        supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile?.full_name) setClientName(profile.full_name);
-          });
-        setClientEmail(data.user.email || "");
-      }
-      setAuthLoaded(true);
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (data?.user) {
+          setUser(data.user);
+          supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", data.user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile?.full_name) setClientName(profile.full_name);
+            });
+          setClientEmail(data.user.email || "");
+        }
+        setAuthLoaded(true);
+      })
+      .catch(() => setAuthLoaded(true));
   }, []);
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
@@ -321,7 +324,7 @@ export default function TurnoContent() {
 
   const stepNames = ["calendar", "form", "payment", "confirm"] as const;
 
-  if (!authLoaded) {
+  if (!authLoaded || tenantLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />

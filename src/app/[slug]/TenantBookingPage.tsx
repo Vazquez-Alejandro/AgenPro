@@ -62,21 +62,24 @@ export default function TenantBookingPage({
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUser(data.user);
-        supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", data.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile?.full_name) setClientName(profile.full_name);
-          });
-        setClientEmail(data.user.email || "");
-      }
-      setAuthLoaded(true);
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (data?.user) {
+          setUser(data.user);
+          supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", data.user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (profile?.full_name) setClientName(profile.full_name);
+            });
+          setClientEmail(data.user.email || "");
+        }
+        setAuthLoaded(true);
+      })
+      .catch(() => setAuthLoaded(true));
   }, []);
 
   const primaryColor = tenant.primary_color || "#10b981";
