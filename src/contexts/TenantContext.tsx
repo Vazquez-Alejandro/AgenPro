@@ -18,56 +18,63 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
 
   useEffect(() => {
+    let cancelled = false;
+
     const detectTenant = async () => {
-      const path = window.location.pathname;
-      const slug = path.split("/")[1];
+      try {
+        const path = window.location.pathname;
+        const slug = path.split("/")[1];
 
-      const reserved = [
-        "admin", "dashboard", "login", "register", "reservar",
-        "turno", "api", "auth", "_not-found",
-      ];
+        const reserved = [
+          "admin", "dashboard", "login", "register", "reservar",
+          "turno", "api", "auth", "_not-found",
+        ];
 
-      if (slug && !reserved.includes(slug)) {
-        const { data } = await supabase
-          .from("tenants")
-          .select("*")
-          .eq("slug", slug)
-          .single();
-
-        if (data) {
-          setTenant(data as Tenant);
-          setLoading(false);
-          return;
-        }
-      }
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("tenant_id")
-          .eq("id", user.id)
-          .single();
-
-        if (profile?.tenant_id) {
-          const { data: t } = await supabase
+        if (slug && !reserved.includes(slug)) {
+          const { data } = await supabase
             .from("tenants")
             .select("*")
-            .eq("id", profile.tenant_id)
+            .eq("slug", slug)
             .single();
 
-          if (t) {
-            setTenant(t as Tenant);
+          if (data && !cancelled) {
+            setTenant(data as Tenant);
             setLoading(false);
             return;
           }
         }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && !cancelled) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("tenant_id")
+            .eq("id", user.id)
+            .single();
+
+          if (profile?.tenant_id && !cancelled) {
+            const { data: t } = await supabase
+              .from("tenants")
+              .select("*")
+              .eq("id", profile.tenant_id)
+              .single();
+
+            if (t && !cancelled) {
+              setTenant(t as Tenant);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      } catch {
+        // Error de conexión, continuar sin tenant
       }
 
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     };
 
     detectTenant();
+    return () => { cancelled = true; };
   }, []);
 
   return (
