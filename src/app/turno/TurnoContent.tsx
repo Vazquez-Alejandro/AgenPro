@@ -82,9 +82,16 @@ export default function TurnoContent() {
   const { tenant, loading: tenantLoading } = useTenant();
 
   useEffect(() => {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) setAuthLoaded(true);
+    }, 3000);
+
     supabase.auth
       .getUser()
       .then(({ data }) => {
+        if (cancelled) return;
+        clearTimeout(timeout);
         if (data?.user) {
           setUser(data.user);
           supabase
@@ -99,7 +106,14 @@ export default function TurnoContent() {
         }
         setAuthLoaded(true);
       })
-      .catch(() => setAuthLoaded(true));
+      .catch(() => {
+        if (!cancelled) {
+          clearTimeout(timeout);
+          setAuthLoaded(true);
+        }
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
@@ -324,7 +338,7 @@ export default function TurnoContent() {
 
   const stepNames = ["calendar", "form", "payment", "confirm"] as const;
 
-  if (!authLoaded || tenantLoading) {
+  if (!authLoaded) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -360,6 +374,18 @@ export default function TurnoContent() {
               Iniciar sesión
             </Link>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tenant) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
+        <BackButton href="/" />
+        <div className="text-center max-w-sm">
+          <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mt-4" />
+          <p className="text-white/50 mt-4">Cargando tu negocio...</p>
         </div>
       </div>
     );

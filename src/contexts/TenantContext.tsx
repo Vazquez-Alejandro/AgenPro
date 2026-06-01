@@ -44,7 +44,13 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const userResult = await Promise.race([
+          supabase.auth.getUser(),
+          new Promise<{ data: { user: null } }>((resolve) =>
+            setTimeout(() => resolve({ data: { user: null } }), 3000)
+          ),
+        ]);
+        const { data: { user } } = userResult as { data: { user: any } };
         if (user && !cancelled) {
           const { data: profile } = await supabase
             .from("profiles")

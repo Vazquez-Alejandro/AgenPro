@@ -62,9 +62,16 @@ export default function TenantBookingPage({
   const { toast } = useToast();
 
   useEffect(() => {
+    let cancelled = false;
+    const timeout = setTimeout(() => {
+      if (!cancelled) setAuthLoaded(true);
+    }, 3000);
+
     supabase.auth
       .getUser()
       .then(({ data }) => {
+        if (cancelled) return;
+        clearTimeout(timeout);
         if (data?.user) {
           setUser(data.user);
           supabase
@@ -79,7 +86,14 @@ export default function TenantBookingPage({
         }
         setAuthLoaded(true);
       })
-      .catch(() => setAuthLoaded(true));
+      .catch(() => {
+        if (!cancelled) {
+          clearTimeout(timeout);
+          setAuthLoaded(true);
+        }
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
   const primaryColor = tenant.primary_color || "#10b981";
