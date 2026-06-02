@@ -165,6 +165,25 @@ export default function RegisterContent() {
       return;
     }
 
+    const availabilityRows = Array.from({ length: 7 }, (_, i) => ({
+      tenant_id: tenant.id,
+      day_of_week: i,
+      enabled: true,
+      start_time: "09:00",
+      end_time: "18:00",
+      slot_duration: 30,
+    }));
+    await supabase.from("availability").insert(availabilityRows);
+
+    await supabase.from("services").insert({
+      tenant_id: tenant.id,
+      name: "Turno General",
+      duration: 30,
+      price: 0,
+      active: true,
+      cleaning_time: 0,
+    });
+
     router.push("/admin");
   };
 
