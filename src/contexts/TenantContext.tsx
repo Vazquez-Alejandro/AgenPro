@@ -44,31 +44,34 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        const userResult = await Promise.race([
-          supabase.auth.getUser(),
-          new Promise<{ data: { user: null } }>((resolve) =>
-            setTimeout(() => resolve({ data: { user: null } }), 3000)
-          ),
-        ]);
-        const { data: { user } } = userResult as { data: { user: any } };
-        if (user && !cancelled) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("tenant_id")
-            .eq("id", user.id)
-            .single();
-
-          if (profile?.tenant_id && !cancelled) {
-            const { data: t } = await supabase
-              .from("tenants")
-              .select("*")
-              .eq("id", profile.tenant_id)
+        const hasSession = document.cookie.includes("sb-");
+        if (hasSession && !cancelled) {
+          const userResult = await Promise.race([
+            supabase.auth.getUser(),
+            new Promise<{ data: { user: null } }>((resolve) =>
+              setTimeout(() => resolve({ data: { user: null } }), 5000)
+            ),
+          ]);
+          const { data: { user } } = userResult as { data: { user: any } };
+          if (user && !cancelled) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("tenant_id")
+              .eq("id", user.id)
               .single();
 
-            if (t && !cancelled) {
-              setTenant(t as Tenant);
-              setLoading(false);
-              return;
+            if (profile?.tenant_id && !cancelled) {
+              const { data: t } = await supabase
+                .from("tenants")
+                .select("*")
+                .eq("id", profile.tenant_id)
+                .single();
+
+              if (t && !cancelled) {
+                setTenant(t as Tenant);
+                setLoading(false);
+                return;
+              }
             }
           }
         }

@@ -82,16 +82,14 @@ export default function TurnoContent() {
   const { tenant, loading: tenantLoading } = useTenant();
 
   useEffect(() => {
-    let cancelled = false;
-    const timeout = setTimeout(() => {
-      if (!cancelled) setAuthLoaded(true);
-    }, 3000);
-
+    const hasSession = document.cookie.includes("sb-");
+    if (!hasSession) {
+      setAuthLoaded(true);
+      return;
+    }
     supabase.auth
       .getUser()
       .then(({ data }) => {
-        if (cancelled) return;
-        clearTimeout(timeout);
         if (data?.user) {
           setUser(data.user);
           supabase
@@ -106,14 +104,7 @@ export default function TurnoContent() {
         }
         setAuthLoaded(true);
       })
-      .catch(() => {
-        if (!cancelled) {
-          clearTimeout(timeout);
-          setAuthLoaded(true);
-        }
-      });
-
-    return () => { cancelled = true; };
+      .catch(() => setAuthLoaded(true));
   }, []);
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
