@@ -2,62 +2,151 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Availability } from "@/types";
+import type { Availability, Service } from "@/types";
 import { DAY_NAMES } from "@/types";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Settings2 } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 
+const EMPTY_DAY_TEMPLATE = {
+  enabled: false,
+  start_time: "09:00",
+  end_time: "18:00",
+  slot_duration: 30,
+};
+
 export default function AvailabilityContent() {
-  const [availability, setAvailability] = useState<Availability[]>([]);
+  const [allAvailability, setAllAvailability] = useState<Availability[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
+  const [filterByService, setFilterByService] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
 
   useEffect(() => {
-    fetchAvailability();
+    if (tenant) {
+      setFilterByService(tenant.filter_by_service);
+      fetchData();
+    }
   }, [tenant]);
 
-  const fetchAvailability = async () => {
+  const fetchData = async () => {
     if (!tenant) { setLoading(false); return; }
-    const { data } = await supabase
-      .from("availability")
-      .select("*")
-      .eq("tenant_id", tenant.id)
-      .order("day_of_week");
-    if (data) setAvailability(data);
+
+    const [availResult, servicesResult] = await Promise.all([
+      supabase
+        .from("availability")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .order("day_of_week"),
+      supabase
+        .from("services")
+        .select("*")
+        .eq("tenant_id", tenant.id)
+        .eq("active", true)
+        .order("name"),
+    ]);
+
+    if (availResult.data) setAllAvailability(availResult.data);
+    if (servicesResult.data) {
+      setServices(servicesResult.data);
+      if (servicesResult.data.length > 0 && !selectedServiceId) {
+        setSelectedServiceId(servicesResult.data[0].id);
+      }
+    }
     setLoading(false);
   };
 
-  const toggleDay = async (day: Availability) => {
-    setAvailability((prev) =>
-      prev.map((d) =>
-        d.day_of_week === day.day_of_week
-          ? { ...d, enabled: !d.enabled }
-          : d
-      )
-    );
+  const getVisibleAvailability = (): Availability[] => {
+    if (!filterByService) {
+      return allAvailability.filter((a) => a.service_id === null);
+    }
+    return allAvailability.filter((a) => a.service_id === selectedServiceId);
+  };
+
+  const getOrCreateDayRows = (): Availability[] => {
+    const visible = getVisibleAvailability();
+    return DAY_NAMES.map((_, index) => {
+      const existing = visible.find((a) => a.day_of_week === index);
+      if (existing) return existing;
+      return {
+        id: `new-${index}`,
+        tenant_id: tenant?.id ?? null,
+        service_id: filterByService ? selectedServiceId : null,
+        day_of_week: index,
+        ...EMPTY_DAY_TEMPLATE,
+      } as Availability;
+    });
+  };
+
+  const toggleDay = (dayOfWeek: number) => {
+    setAllAvailability((prev) => {
+      const existing = prev.find(
+        (a) =>
+          a.day_of_week === dayOfWeek &&
+          a.service_id === (filterByService ? selectedServiceId : null)
+      );
+      if (existing) {
+        return prev.map((a) =>
+          a.id === existing.id ? { ...a, enabled: !a.enabled } : a
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `new-${dayOfWeek}`,
+          tenant_id: tenant?.id ?? null,
+          service_id: filterByService ? selectedServiceId : null,
+          day_of_week: dayOfWeek,
+          ...EMPTY_DAY_TEMPLATE,
+          enabled: true,
+        } as Availability,
+      ];
+    });
   };
 
   const updateField = (
-    dayIndex: number,
+    dayOfWeek: number,
     field: "start_time" | "end_time" | "slot_duration",
     value: string | number
   ) => {
-    setAvailability((prev) =>
-      prev.map((d) =>
-        d.day_of_week === dayIndex ? { ...d, [field]: value } : d
-      )
-    );
+    setAllAvailability((prev) => {
+      const existing = prev.find(
+        (a) =>
+          a.day_of_week === dayOfWeek &&
+          a.service_id === (filterByService ? selectedServiceId : null)
+      );
+      if (existing) {
+        return prev.map((a) =>
+          a.id === existing.id ? { ...a, [field]: value } : a
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `new-${dayOfWeek}`,
+          tenant_id: tenant?.id ?? null,
+          service_id: filterByService ? selectedServiceId : null,
+          day_of_week: dayOfWeek,
+          ...EMPTY_DAY_TEMPLATE,
+          [field]: value,
+        } as Availability,
+      ];
+    });
   };
 
   const handleSave = async () => {
     if (!tenant) return;
     setSaving(true);
-    for (const day of availability) {
+
+    const rows = getOrCreateDayRows();
+    for (const day of rows) {
+      const isExisting = !day.id.startsWith("new-");
       await supabase.from("availability").upsert({
-        id: day.id,
+        ...(isExisting ? { id: day.id } : {}),
         tenant_id: tenant.id,
+        service_id: filterByService ? selectedServiceId : null,
         day_of_week: day.day_of_week,
         enabled: day.enabled,
         start_time: day.start_time,
@@ -65,8 +154,17 @@ export default function AvailabilityContent() {
         slot_duration: day.slot_duration,
       });
     }
+
+    await supabase
+      .from("tenants")
+      .update({ filter_by_service: filterByService })
+      .eq("id", tenant.id);
+
+    await fetchData();
     setSaving(false);
   };
+
+  const dayRows = getOrCreateDayRows();
 
   if (loading) {
     return (
@@ -99,6 +197,44 @@ export default function AvailabilityContent() {
         </button>
       </div>
 
+      <div className="flex items-center gap-4 mb-6 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+        <Settings2 className="w-5 h-5 text-white/40 shrink-0" />
+        <div className="flex items-center gap-3 flex-1">
+          <span className="text-sm text-white/60">Filtrar disponibilidad por servicio</span>
+          <button
+            onClick={() => setFilterByService((prev) => !prev)}
+            className={`relative w-11 h-6 rounded-full transition-all shrink-0 ${
+              filterByService ? "bg-emerald-500" : "bg-white/10"
+            }`}
+          >
+            <div
+              className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
+                filterByService ? "left-6" : "left-1"
+              }`}
+            />
+          </button>
+        </div>
+        {filterByService && services.length > 0 && (
+          <select
+            value={selectedServiceId}
+            onChange={(e) => setSelectedServiceId(e.target.value)}
+            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[180px]"
+          >
+            {services.map((s) => (
+              <option key={s.id} value={s.id} className="bg-gray-900">
+                {s.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {filterByService && services.length === 0 && (
+        <div className="text-center py-8 text-white/40 text-sm">
+          No hay servicios activos para configurar disponibilidad.
+        </div>
+      )}
+
       <div className="bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden">
         <table className="w-full">
           <thead>
@@ -111,7 +247,7 @@ export default function AvailabilityContent() {
             </tr>
           </thead>
           <tbody>
-            {availability.map((day) => (
+            {dayRows.map((day) => (
               <tr
                 key={day.day_of_week}
                 className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors"
@@ -119,7 +255,7 @@ export default function AvailabilityContent() {
                 <td className="py-3 px-4 text-white">{DAY_NAMES[day.day_of_week]}</td>
                 <td className="py-3 px-4">
                   <button
-                    onClick={() => toggleDay(day)}
+                    onClick={() => toggleDay(day.day_of_week)}
                     className={`w-10 h-6 rounded-full transition-all ${
                       day.enabled ? "bg-emerald-500" : "bg-white/10"
                     }`}
@@ -161,7 +297,7 @@ export default function AvailabilityContent() {
                       updateField(
                         day.day_of_week,
                         "slot_duration",
-                        parseInt(e.target.value) || 60
+                        parseInt(e.target.value) || 30
                       )
                     }
                     disabled={!day.enabled}

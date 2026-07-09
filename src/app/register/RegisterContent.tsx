@@ -11,25 +11,11 @@ import BackButton from "@/components/BackButton";
 
 const PLANS = [
   {
-    name: "inicial",
-    label: "Inicial",
-    price: "$12/mes",
-    desc: "1 calendario, agenda básica, notificaciones email + WhatsApp. Ideal para profesionales independientes.",
-    popular: false,
-  },
-  {
-    name: "profesional",
-    label: "Profesional",
-    price: "$30/mes",
-    desc: "Múltiples agendas, reportes de facturación, gestión de clientes, recordatorios WhatsApp personalizados.",
+    name: "pro",
+    label: "Pro",
+    price: "$15/mes",
+    desc: "Todo incluido. Sin límites. Turnos ilimitados, múltiples servicios, notificaciones WhatsApp, disponibilidad por servicio.",
     popular: true,
-  },
-  {
-    name: "premium",
-    label: "Premium",
-    price: "$75/mes",
-    desc: "Control de stock, pagos con seña, soporte prioritario. Sin límites.",
-    popular: false,
   },
 ];
 

@@ -105,13 +105,20 @@ export default function TenantBookingPage({
       return;
     }
 
-    const { data } = await supabase
+    let query = supabase
       .from("availability")
       .select("*")
       .eq("tenant_id", tenant.id)
       .eq("day_of_week", dayOfWeek)
-      .eq("enabled", true)
-      .single();
+      .eq("enabled", true);
+
+    if (tenant.filter_by_service && selectedServiceId) {
+      query = query.eq("service_id", selectedServiceId);
+    } else {
+      query = query.is("service_id", null);
+    }
+
+    const { data } = await query.single();
 
     if (data) {
       setTimeSlots(generateTimeSlots(data as Availability));

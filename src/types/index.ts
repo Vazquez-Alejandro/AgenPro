@@ -8,6 +8,7 @@ export interface Tenant {
   turnos_limit: number;
   staff_limit: number;
   features: Record<string, boolean>;
+  filter_by_service: boolean;
   deposit_percent: number;
   default_cleaning_time: number;
   custom_fields: CustomField[];
@@ -67,6 +68,7 @@ export interface TimeSlot {
 export interface Availability {
   id: string;
   tenant_id: string | null;
+  service_id: string | null;
   day_of_week: number;
   enabled: boolean;
   start_time: string;
@@ -122,46 +124,44 @@ export interface PlanDefinition {
 
 export const PLAN_LIMITS: Record<string, { appointments: number; staff: number }> = {
   free: { appointments: 30, staff: 1 },
-  inicial: { appointments: 100, staff: 1 },
-  profesional: { appointments: 500, staff: 5 },
-  premium: { appointments: 999999, staff: 999999 },
+  pro: { appointments: 999999, staff: 999 },
 };
 
 export const FEATURES: Record<string, { label: string; desc: string; plan: string }> = {
   blacklist: {
     label: "Bloqueo de Clientes",
     desc: "Bloqueá números de teléfono o emails para que no puedan reservar.",
-    plan: "inicial",
+    plan: "pro",
   },
   cleaning_time: {
     label: "Margen de Limpieza",
     desc: "Tiempo muerto automático entre turnos para desinfección o alistamiento.",
-    plan: "profesional",
+    plan: "pro",
   },
   smart_assignment: {
     label: "Asignación Inteligente",
     desc: "Asigná turnos automáticamente al empleado con más disponibilidad.",
-    plan: "profesional",
+    plan: "pro",
   },
   double_booking: {
     label: "Sobreturnos Manuales",
     desc: "Habilitá turnos extras desde el panel para clientes VIP sin romper la agenda.",
-    plan: "profesional",
+    plan: "pro",
   },
   mandatory_deposit: {
     label: "Seña Obligatoria",
     desc: "El cliente paga un % del servicio para confirmar el turno. Reduce ausentismo.",
-    plan: "premium",
+    plan: "pro",
   },
   no_show_tracking: {
     label: "Historial de No-Show",
     desc: "Estadísticas de clientes que faltan, días rentables y rendimiento por empleado.",
-    plan: "premium",
+    plan: "pro",
   },
   confirmation_button: {
     label: "Confirmación por WhatsApp",
     desc: "El cliente confirma o cancela desde el link del mensaje. Cancela con 24hs → avisa a lista de espera.",
-    plan: "premium",
+    plan: "pro",
   },
 };
 
