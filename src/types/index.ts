@@ -176,5 +176,5 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
 };
 
 export const DAY_NAMES = [
-  "Jueves", "Viernes", "Sábado",
+  "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado",
 ];

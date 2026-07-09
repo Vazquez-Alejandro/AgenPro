@@ -20,13 +20,10 @@ import {
   Phone,
   Scissors,
   CreditCard,
-  LogIn,
-  UserPlus,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useLang } from "@/contexts/LangContext";
 import { useTenant } from "@/contexts/TenantContext";
-import Link from "next/link";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
@@ -57,8 +54,6 @@ function formatPrice(cents: number) {
 
 export default function TurnoContent() {
   const { t } = useLang();
-  const [user, setUser] = useState<any | null>(null);
-  const [authLoaded, setAuthLoaded] = useState(false);
   const [step, setStep] = useState<"calendar" | "form" | "payment" | "confirm">(
     "calendar"
   );
@@ -79,33 +74,7 @@ export default function TurnoContent() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
-  const { tenant, loading: tenantLoading } = useTenant();
-
-  useEffect(() => {
-    const hasSession = document.cookie.includes("sb-");
-    if (!hasSession) {
-      setAuthLoaded(true);
-      return;
-    }
-    supabase.auth
-      .getUser()
-      .then(({ data }) => {
-        if (data?.user) {
-          setUser(data.user);
-          supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", data.user.id)
-            .single()
-            .then(({ data: profile }) => {
-              if (profile?.full_name) setClientName(profile.full_name);
-            });
-          setClientEmail(data.user.email || "");
-        }
-        setAuthLoaded(true);
-      })
-      .catch(() => setAuthLoaded(true));
-  }, []);
+  const { tenant } = useTenant();
 
   const selectedService = services.find((s) => s.id === selectedServiceId);
 
@@ -186,12 +155,41 @@ export default function TurnoContent() {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data } = await supabase
       .from("appointments")
-      .select("time")
+      .select("time, service_id")
       .eq("tenant_id", tenant.id)
       .eq("date", dateStr)
       .neq("status", "cancelled");
-    if (data) setDisabledSlots(data.map((a: { time: string }) => a.time));
+
+    const blocked: Set<string> = new Set((data || []).map((a) => a.time));
+
+    if (data && tenant.features?.cleaning_time) {
+      const allServices = await supabase.from("services").select("id, cleaning_time");
+      const svcMap = new Map((allServices.data || []).map((s) => [s.id, s.cleaning_time]));
+      const slotDur = 30;
+
+      for (const apt of data) {
+        const svcCleaning = svcMap.get(apt.service_id) || tenant.default_cleaning_time || 0;
+        const aptStart = apt.time.split(":").map(Number);
+        const aptMinutes = aptStart[0] * 60 + aptStart[1];
+        const aptDuration = 30;
+        const aptCleaning = svcCleaning;
+        const aptEnd = aptMinutes + aptDuration + aptCleaning;
+
+        for (let m = aptMinutes; m < aptEnd; m += slotDur) {
+          const h = Math.floor(m / 60);
+          const min = m % 60;
+          blocked.add(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+        }
+      }
+    }
+
+    setDisabledSlots(Array.from(blocked));
   };
+
+  function timeToMinutes(t: string): number {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  }
 
   const goToPayment = async () => {
     if (!selectedService || selectedService.price <= 0) {
@@ -213,12 +211,11 @@ export default function TurnoContent() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Error al iniciar el pago");
+      if (!res.ok || !data.clientSecret) {
+        setError(data.error || "Error al procesar el pago");
         setPaymentLoading(false);
         return;
       }
-
       setClientSecret(data.clientSecret);
       setStep("payment");
     } catch {
@@ -254,34 +251,12 @@ export default function TurnoContent() {
         return;
       }
 
-      const dateStr = format(selectedDate!, "yyyy-MM-dd");
-      const appRes = await fetch("/api/public-appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date: dateStr,
-          time: selectedTime,
-          service_id: selectedServiceId,
-          client_name: clientName.trim(),
-          client_email: clientEmail.trim(),
-          client_phone: clientPhone.trim() || null,
-          payment_intent_id: data.preferenceId,
-          payment_method: "mercadopago",
-        }),
-      });
-
-      if (!appRes.ok) {
-        const err = await appRes.json();
-        toast(err.error || "Error al crear el turno", "error");
-        setLoading(false);
-        return;
-      }
-
+      await createAppointment(data.payment_id, "mercadopago");
       window.location.href = data.initPoint;
     } catch {
       setError("Error de conexión");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const createAppointment = async (
@@ -300,7 +275,6 @@ export default function TurnoContent() {
         date: dateStr,
         time: selectedTime,
         service_id: selectedServiceId,
-        user_id: user?.id,
         client_name: clientName.trim(),
         client_email: clientEmail.trim(),
         client_phone: clientPhone.trim() || null,
@@ -328,59 +302,6 @@ export default function TurnoContent() {
   };
 
   const stepNames = ["calendar", "form", "payment", "confirm"] as const;
-
-  if (!authLoaded) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
-        <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
-        <div className="text-center max-w-sm">
-          <BackButton href="/" />
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 mt-4">
-            <UserPlus className="w-8 h-8 text-emerald-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Reservá tu turno</h2>
-          <p className="text-white/50 mb-6">
-            Necesitás crear una cuenta o iniciar sesión para poder reservar.
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/register-client"
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
-            >
-              <UserPlus className="w-4 h-4" />
-              Crear cuenta
-            </Link>
-            <Link
-              href="/login"
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 border border-white/10 text-white/70 rounded-xl font-medium hover:bg-white/10 transition-all"
-            >
-              <LogIn className="w-4 h-4" />
-              Iniciar sesión
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!tenant) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
-        <BackButton href="/" />
-        <div className="text-center max-w-sm">
-          <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mt-4" />
-          <p className="text-white/50 mt-4">Cargando tu negocio...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (success) {
     return (
@@ -466,9 +387,9 @@ export default function TurnoContent() {
             {selectedDate && selectedTime && (
               <button
                 onClick={() => setStep("form")}
-                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
               >
-                {t.booking.continue}
+                Continuar
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>
             )}
@@ -476,172 +397,145 @@ export default function TurnoContent() {
         )}
 
         {step === "form" && (
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-            <div className="mb-6 p-4 bg-white/5 rounded-xl">
-              <p className="text-sm text-white/50">{t.booking.dateTime}</p>
-              <p className="text-white font-medium mt-1">
-                {selectedDate &&
-                  format(selectedDate, "EEEE, dd 'de' MMMM", {
-                    locale: es,
-                  })}{" "}
-                - {selectedTime}
-              </p>
-            </div>
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-4">
+            <button
+              onClick={() => setStep("calendar")}
+              className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </button>
 
-            <div className="space-y-4">
+            {services.length > 1 && (
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
                   <Scissors className="w-3.5 h-3.5" />
-                  {t.booking.service}
+                  Servicio
                 </label>
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all appearance-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
                 >
-                  {services.length === 0 && (
-                    <option value="">
-                      {t.booking.noServices}
-                    </option>
-                  )}
                   {services.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} ({s.duration} min — {formatPrice(s.price)})
+                      {s.name} — {formatPrice(s.price)}
                     </option>
                   ))}
                 </select>
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" />
-                  {t.booking.name}
-                </label>
-                <input
-                  type="text"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder={t.booking.namePlaceholder}
-                  required
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                />
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" />
+                Nombre
+              </label>
+              <input
+                type="text"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="Tu nombre"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
+                Email
+              </label>
+              <input
+                type="email"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                Teléfono
+              </label>
+              <input
+                type="tel"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+                placeholder="Opcional"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              />
+            </div>
+
+            {selectedService && selectedService.price > 0 && (
+              <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                <p className="text-sm text-white/50">Total a pagar</p>
+                <p className="text-2xl font-bold text-white mt-1">
+                  {formatPrice(selectedService.price)}
+                </p>
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5" />
-                  {t.booking.email}
-                </label>
-                <input
-                  type="email"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder={t.booking.emailPlaceholder}
-                  required
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5" />
-                  {t.booking.phone}
-                </label>
-                <input
-                  type="tel"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder={t.booking.phonePlaceholder}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep("calendar")}
-                  className="flex-1 px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 hover:text-white transition-all border border-white/10"
-                >
-                  {t.booking.back}
-                </button>
-                <button
-                  type="button"
-                  onClick={goToPayment}
-                  disabled={loading || !clientName.trim() || !clientEmail.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading || paymentLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
+            <button
+              onClick={() => {
+                if (!clientName.trim() || !clientEmail.trim()) {
+                  setError("Completá nombre y email");
+                  return;
+                }
+                goToPayment();
+              }}
+              disabled={loading || paymentLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading || paymentLoading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  {selectedService && selectedService.price > 0 ? (
                     <>
                       <CreditCard className="w-4 h-4" />
-                      {t.booking.goToPayment}
+                      Pagar y reservar
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Reservar turno
                     </>
                   )}
-                </button>
-              </div>
-            </div>
+                </>
+              )}
+            </button>
           </div>
         )}
 
-        {step === "payment" && selectedService && clientSecret && (
+        {step === "payment" && clientSecret && selectedService && (
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-            <div className="mb-6 space-y-2">
-              <p className="text-sm text-white/50">{t.booking.summary}</p>
-              <div className="p-4 bg-white/5 rounded-xl space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">
-                    {selectedService.name} ({selectedService.duration} min)
-                  </span>
-                  <span className="text-white font-medium">
-                    {formatPrice(selectedService.price)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">
-                    {selectedDate &&
-                      format(selectedDate, "EEEE, dd 'de' MMMM", {
-                        locale: es,
-                      })}
-                  </span>
-                  <span className="text-white">{selectedTime}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">{t.booking.name}</span>
-                  <span className="text-white">{clientName}</span>
-                </div>
-                <div className="border-t border-white/10 pt-2 flex justify-between">
-                  <span className="text-white font-semibold">
-                    {t.booking.total}
-                  </span>
-                  <span className="text-emerald-400 font-bold">
-                    {formatPrice(selectedService.price)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
+            <button
+              onClick={() => setStep("form")}
+              className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors mb-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </button>
             <Elements
               stripe={stripePromise}
-              key={clientSecret}
-              options={{ clientSecret }}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: "night",
+                  variables: { colorPrimary: "#10b981" },
+                },
+              }}
             >
               <PaymentForm
                 clientSecret={clientSecret}
                 amount={selectedService.price}
                 serviceName={selectedService.name}
                 onSuccess={handleStripeSuccess}
-                onMPPay={handleMPPay}
+                onMPPay={() => {}}
               />
             </Elements>
-
-            <button
-              type="button"
-              onClick={() => setStep("form")}
-              className="mt-4 w-full px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 hover:text-white transition-all border border-white/10"
-            >
-              {t.booking.back}
-            </button>
           </div>
         )}
       </div>
