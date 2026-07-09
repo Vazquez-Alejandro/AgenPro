@@ -33,7 +33,7 @@ export default function NavbarContent() {
 
     checkUser();
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event: string, session: any) => {
       setUser(!!session);
       if (session?.user) {
         const { data } = await supabase

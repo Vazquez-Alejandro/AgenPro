@@ -160,11 +160,11 @@ export default function TurnoContent() {
       .eq("date", dateStr)
       .neq("status", "cancelled");
 
-    const blocked: Set<string> = new Set((data || []).map((a) => a.time));
+    const blocked: Set<string> = new Set((data || []).map((a: { time: string; service_id: string }) => a.time));
 
     if (data && tenant.features?.cleaning_time) {
       const allServices = await supabase.from("services").select("id, cleaning_time");
-      const svcMap = new Map((allServices.data || []).map((s) => [s.id, s.cleaning_time]));
+      const svcMap = new Map((allServices.data || []).map((s: { id: string; cleaning_time: number }) => [s.id, s.cleaning_time]));
       const slotDur = 30;
 
       for (const apt of data) {

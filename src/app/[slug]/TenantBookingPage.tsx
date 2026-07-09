@@ -130,13 +130,16 @@ export default function TenantBookingPage({
       .eq("date", dateStr)
       .neq("status", "cancelled");
 
-    const blocked: Set<string> = new Set((appointments || []).map((a) => a.time));
+    const aptList = (appointments || []) as { time: string; service_id: string }[];
+    const blocked: Set<string> = new Set(aptList.map((a) => a.time));
 
-    if (appointments && appointments.length > 0) {
+    if (aptList.length > 0) {
       const { data: svcs } = await supabase
         .from("services")
         .select("id, duration, cleaning_time")
         .eq("tenant_id", tenant.id);
+
+      const svcList = (svcs || []) as { id: string; duration: number; cleaning_time: number }[];
 
       const { data: avail } = await supabase
         .from("availability")
@@ -148,9 +151,9 @@ export default function TenantBookingPage({
 
       const slotDur = (avail as Availability | null)?.slot_duration || 60;
 
-      for (const apt of appointments) {
+      for (const apt of aptList) {
         const aptMinutes = timeToMinutes(apt.time);
-        const svc = svcs?.find((s) => s.id === apt.service_id);
+        const svc = svcList.find((s) => s.id === apt.service_id);
         const aptDuration = svc?.duration || 60;
         const aptCleaning = svc?.cleaning_time || 0;
         const aptEnd = aptMinutes + aptDuration + aptCleaning;

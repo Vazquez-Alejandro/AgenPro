@@ -32,7 +32,7 @@ export default function RegisterClientContent() {
       .select("custom_fields")
       .eq("id", tenantId)
       .single()
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any; error: any }) => {
         if (!error && data?.custom_fields) {
           const fields = data.custom_fields as CustomField[];
           setCustomFields(fields.sort((a, b) => a.order - b.order));
