@@ -323,8 +323,8 @@ export default function TurnoContent() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <BackButton href="/" />
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-amber-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
             {t.booking.success}
@@ -350,7 +350,7 @@ export default function TurnoContent() {
       <div className="max-w-2xl mx-auto">
         <BackButton href="/" />
         <div className="flex items-center gap-2 mb-8">
-          <CalendarDays className="w-5 h-5 text-emerald-400" />
+          <CalendarDays className="w-5 h-5 text-amber-400" />
           <h1 className="text-xl font-bold text-white">{t.booking.title}</h1>
         </div>
 
@@ -360,7 +360,7 @@ export default function TurnoContent() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                   step === s
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25"
                     : "bg-white/5 text-white/40"
                 }`}
               >
@@ -402,7 +402,7 @@ export default function TurnoContent() {
             {selectedDate && selectedTime && (
               <button
                 onClick={() => setStep("form")}
-                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25"
               >
                 Continuar
                 <ArrowLeft className="w-4 h-4 rotate-180" />
@@ -430,7 +430,7 @@ export default function TurnoContent() {
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
                 >
                   {services.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -451,7 +451,7 @@ export default function TurnoContent() {
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder="Tu nombre"
-                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
               />
             </div>
 
@@ -465,7 +465,7 @@ export default function TurnoContent() {
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
               />
             </div>
 
@@ -479,7 +479,7 @@ export default function TurnoContent() {
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
                 placeholder="Opcional"
-                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
               />
             </div>
 
@@ -501,7 +501,7 @@ export default function TurnoContent() {
                 goToPayment();
               }}
               disabled={loading || paymentLoading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading || paymentLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -539,7 +539,7 @@ export default function TurnoContent() {
                 clientSecret,
                 appearance: {
                   theme: "night",
-                  variables: { colorPrimary: "#10b981" },
+                  variables: { colorPrimary: "#f59e0b" },
                 },
               }}
             >

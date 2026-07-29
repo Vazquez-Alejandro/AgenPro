@@ -20,7 +20,7 @@ interface PaymentFormProps {
 }
 
 const inputClasses =
-  "w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all";
+  "w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all";
 
 const elementOptions = {
   style: {
@@ -91,7 +91,7 @@ export default function PaymentForm({
     <div className="space-y-6">
       <div className="p-4 bg-white/5 rounded-xl">
         <p className="text-sm text-white/50">{t.booking.total}</p>
-        <p className="text-2xl font-bold text-emerald-400 mt-1">
+        <p className="text-2xl font-bold text-amber-400 mt-1">
           {formatPrice(amount)}
         </p>
       </div>
@@ -102,7 +102,7 @@ export default function PaymentForm({
           onClick={() => setMethod("card")}
           className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all border ${
             method === "card"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+              ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
               : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/70"
           }`}
         >
@@ -162,7 +162,7 @@ export default function PaymentForm({
           <button
             type="submit"
             disabled={!stripe || loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

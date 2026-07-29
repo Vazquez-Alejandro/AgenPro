@@ -8,7 +8,7 @@ CREATE TABLE tenants (
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   logo_url TEXT,
-  primary_color TEXT NOT NULL DEFAULT '#10b981',
+  primary_color TEXT NOT NULL DEFAULT '#f59e0b',
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'basic', 'pro', 'premium')),
   stripe_customer_id TEXT,
   subscription_status TEXT NOT NULL DEFAULT 'inactive',

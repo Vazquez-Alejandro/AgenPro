@@ -60,7 +60,7 @@ export default function LoginContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
               required
             />
           </div>
@@ -75,7 +75,7 @@ export default function LoginContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                 required
               />
               <button
@@ -97,7 +97,7 @@ export default function LoginContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -113,13 +113,13 @@ export default function LoginContent() {
         <div className="mt-6 text-center text-sm text-white/40 space-y-1">
           <p>
             ¿Querés registrar tu negocio?{" "}
-            <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+            <Link href="/register" className="text-amber-400 hover:text-amber-300 transition-colors">
               Crear cuenta profesional
             </Link>
           </p>
           <p>
             ¿Querés reservar un turno?{" "}
-            <Link href="/register-client" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+            <Link href="/register-client" className="text-amber-400 hover:text-amber-300 transition-colors">
               Crear cuenta de cliente
             </Link>
           </p>

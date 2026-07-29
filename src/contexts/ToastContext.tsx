@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   };
 
   const styles = {
-    success: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+    success: "bg-amber-500/10 border-amber-500/20 text-amber-400",
     error: "bg-red-500/10 border-red-500/20 text-red-400",
     info: "bg-blue-500/10 border-blue-500/20 text-blue-400",
   };

@@ -29,7 +29,7 @@ import { FEATURES, DEFAULT_FEATURES } from "@/types";
 
 const PLAN_COLORS: Record<string, string> = {
   free: "#6b7280",
-  inicial: "#10b981",
+  inicial: "#f59e0b",
   profesional: "#3b82f6",
   premium: "#f59e0b",
 };
@@ -65,7 +65,7 @@ export default function SettingsContent() {
   const { tenant, loading: tenantLoading } = useTenant();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#10b981");
+  const [primaryColor, setPrimaryColor] = useState("#f59e0b");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -89,7 +89,7 @@ export default function SettingsContent() {
     if (tenant) {
       setName(tenant.name);
       setSlug(tenant.slug);
-      setPrimaryColor(tenant.primary_color || "#10b981");
+      setPrimaryColor(tenant.primary_color || "#f59e0b");
       setLogoUrl(tenant.logo_url);
       setFeatures({ ...DEFAULT_FEATURES, ...(tenant.features || {}) });
       setDepositPercent(tenant.deposit_percent || 0);
@@ -220,7 +220,7 @@ export default function SettingsContent() {
   if (tenantLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
       </div>
     );
   }
@@ -291,7 +291,7 @@ export default function SettingsContent() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
           />
         </div>
 
@@ -320,7 +320,7 @@ export default function SettingsContent() {
             />
             <span className="text-sm text-white/50 font-mono">{primaryColor}</span>
             <div className="flex gap-1">
-              {["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"].map(
+              {["#f59e0b", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"].map(
                 (c) => (
                   <button
                     key={c}
@@ -337,7 +337,7 @@ export default function SettingsContent() {
         <button
           onClick={handleSave}
           disabled={saving || !name.trim()}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -351,7 +351,7 @@ export default function SettingsContent() {
       {/* Custom Fields */}
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Users className="w-4 h-4 text-emerald-400" />
+          <Users className="w-4 h-4 text-amber-400" />
           Campos personalizados (registro de clientes)
         </h2>
         <p className="text-xs text-white/30 mb-4">
@@ -389,7 +389,7 @@ export default function SettingsContent() {
               value={newFieldName}
               onChange={(e) => setNewFieldName(e.target.value)}
               placeholder="Ej: DNI"
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
             />
           </div>
           <div>
@@ -397,7 +397,7 @@ export default function SettingsContent() {
             <select
               value={newFieldType}
               onChange={(e) => setNewFieldType(e.target.value as CustomField["type"])}
-              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
             >
               <option value="text">Texto</option>
               <option value="number">Número</option>
@@ -410,14 +410,14 @@ export default function SettingsContent() {
               type="checkbox"
               checked={newFieldRequired}
               onChange={(e) => setNewFieldRequired(e.target.checked)}
-              className="accent-emerald-500"
+              className="accent-amber-500"
             />
             <span className="text-xs text-white/50">Oblig.</span>
           </label>
           <button
             onClick={addCustomField}
             disabled={savingFields || !newFieldName.trim()}
-            className="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+            className="px-3 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
           >
             {savingFields ? <Loader2 className="w-4 h-4 animate-spin" /> : "+"}
           </button>
@@ -461,7 +461,7 @@ export default function SettingsContent() {
                 key={plan.name}
                 className={`p-4 rounded-xl border transition-all flex flex-col ${
                   isCurrent
-                    ? "border-emerald-500/30 bg-emerald-500/5"
+                    ? "border-amber-500/30 bg-amber-500/5"
                     : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
                 }`}
               >
@@ -476,7 +476,7 @@ export default function SettingsContent() {
                 </p>
                 <p className="mt-3 text-xs text-white/50 flex-1">{plan.description}</p>
                 {isCurrent ? (
-                  <p className="text-xs text-emerald-400 mt-3 font-medium flex items-center gap-1">
+                  <p className="text-xs text-amber-400 mt-3 font-medium flex items-center gap-1">
                     <Check className="w-3 h-3" /> Plan actual
                   </p>
                 ) : (
@@ -486,7 +486,7 @@ export default function SettingsContent() {
                     className={`mt-3 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       plan.price_monthly_cents === 0
                         ? "bg-white/5 text-white/60 hover:bg-white/10"
-                        : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                        : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
                     } disabled:opacity-50`}
                   >
                     {isLoading ? (
@@ -506,7 +506,7 @@ export default function SettingsContent() {
       {/* Features */}
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <ToggleRight className="w-4 h-4 text-emerald-400" />
+          <ToggleRight className="w-4 h-4 text-amber-400" />
           Funciones Premium
         </h2>
         <p className="text-xs text-white/30 mb-4">
@@ -534,7 +534,7 @@ export default function SettingsContent() {
                     .update({ deposit_percent: v })
                     .eq("id", tenant!.id);
                 }}
-                className="flex-1 accent-emerald-500"
+                className="flex-1 accent-amber-500"
               />
               <span className="text-sm text-white font-medium w-12 text-right">{depositPercent}%</span>
             </div>
@@ -562,7 +562,7 @@ export default function SettingsContent() {
                     .update({ default_cleaning_time: v })
                     .eq("id", tenant!.id);
                 }}
-                className="flex-1 accent-emerald-500"
+                className="flex-1 accent-amber-500"
               />
               <span className="text-sm text-white font-medium w-12 text-right">{defaultCleaningTime}min</span>
             </div>
@@ -586,7 +586,7 @@ export default function SettingsContent() {
                 key={key}
                 className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
                   isOn
-                    ? "border-emerald-500/20 bg-emerald-500/5"
+                    ? "border-amber-500/20 bg-amber-500/5"
                     : "border-white/5 bg-white/[0.02]"
                 } ${!isAvailable ? "opacity-40" : ""}`}
               >
@@ -609,7 +609,7 @@ export default function SettingsContent() {
                       }}
                       disabled={!isAvailable || savingFeatures}
                       className={`shrink-0 transition-all ${
-                        isOn ? "text-emerald-400" : "text-white/20 hover:text-white/40"
+                        isOn ? "text-amber-400" : "text-white/20 hover:text-white/40"
                       }`}
                     >
                       {isOn ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}

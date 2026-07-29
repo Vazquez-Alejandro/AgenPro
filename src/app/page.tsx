@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div className="flex-1">
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 relative">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
@@ -31,7 +31,7 @@ export default function Home() {
                 Reservá tu turno
               </span>
               <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
+              <span className="gold-shimmer">
                 de forma simple y rápida
               </span>
             </h1>
@@ -42,7 +42,7 @@ export default function Home() {
             <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
               <Link
                 href="/turno"
-                className="px-8 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+                className="px-8 py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all gold-glow"
               >
                 Sacar Turno
               </Link>
@@ -67,8 +67,8 @@ export default function Home() {
               key={f.title}
               className="group relative p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all"
             >
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
-                <f.icon className="w-5 h-5 text-emerald-400" />
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
+                <f.icon className="w-5 h-5 text-amber-400" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">
                 {f.title}

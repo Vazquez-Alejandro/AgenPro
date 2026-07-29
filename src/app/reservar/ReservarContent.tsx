@@ -184,8 +184,8 @@ export default function ReservarContent() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
         <div className="text-center">
           <BackButton href="/" />
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-amber-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Turno{successCount > 1 ? "s" : ""} Reservado{successCount > 1 ? "s" : ""}</h2>
           <p className="text-white/50">
@@ -204,7 +204,7 @@ export default function ReservarContent() {
       <div className="max-w-2xl mx-auto">
         <BackButton href="/" />
         <div className="flex items-center gap-2 mb-8">
-          <CalendarDays className="w-5 h-5 text-emerald-400" />
+          <CalendarDays className="w-5 h-5 text-amber-400" />
           <h1 className="text-xl font-bold text-white">Reservar Turno</h1>
         </div>
 
@@ -214,7 +214,7 @@ export default function ReservarContent() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                   step === s
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25"
                     : "bg-white/5 text-white/40"
                 }`}
               >
@@ -254,7 +254,7 @@ export default function ReservarContent() {
             {selectedDate && selectedTime && (
               <button
                 onClick={() => setStep("form")}
-                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+                className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25"
               >
                 Continuar
                 <ArrowLeft className="w-4 h-4 rotate-180" />
@@ -279,7 +279,7 @@ export default function ReservarContent() {
                 <select
                   value={selectedServiceId}
                   onChange={(e) => setSelectedServiceId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all appearance-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all appearance-none"
                 >
                   {services.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -297,7 +297,7 @@ export default function ReservarContent() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Contanos si tenés alguna observación..."
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all resize-none"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none"
                 />
               </div>
 
@@ -307,7 +307,7 @@ export default function ReservarContent() {
                     type="button"
                     onClick={() => setRecurring(!recurring)}
                     className={`w-10 h-6 rounded-full transition-all shrink-0 ${
-                      recurring ? "bg-emerald-500" : "bg-white/10"
+                      recurring ? "bg-amber-500" : "bg-white/10"
                     }`}
                   >
                     <div
@@ -333,7 +333,7 @@ export default function ReservarContent() {
                       value={recurringEndDate}
                       onChange={(e) => setRecurringEndDate(e.target.value)}
                       min={selectedDate ? format(new Date(selectedDate.getTime() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd") : undefined}
-                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                      className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     />
                   </div>
                 )}
@@ -350,7 +350,7 @@ export default function ReservarContent() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

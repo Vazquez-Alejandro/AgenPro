@@ -75,7 +75,7 @@ export default function ServicesContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function ServicesContent() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Consulta General"
-              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 w-60"
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 w-60"
             />
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function ServicesContent() {
               onChange={(e) => setNewDuration(parseInt(e.target.value) || 60)}
               min={15}
               step={15}
-              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
           <div>
@@ -121,7 +121,7 @@ export default function ServicesContent() {
               onChange={(e) => setNewPrice(parseInt(e.target.value) || 0)}
               min={0}
               step={100}
-              className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              className="w-28 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
           <div>
@@ -134,13 +134,13 @@ export default function ServicesContent() {
               onChange={(e) => setNewCleaning(parseInt(e.target.value) || 0)}
               min={0}
               max={60}
-              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              className="w-24 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
           <button
             onClick={addService}
             disabled={!newName.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
             Agregar
@@ -163,7 +163,7 @@ export default function ServicesContent() {
                 <button
                   onClick={() => toggleActive(s)}
                   className={`w-10 h-6 rounded-full transition-all ${
-                    s.active ? "bg-emerald-500" : "bg-white/10"
+                    s.active ? "bg-amber-500" : "bg-white/10"
                   }`}
                 >
                   <div

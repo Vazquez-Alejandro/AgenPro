@@ -75,7 +75,7 @@ export default async function AdminLayout({
             <a
               href={`/${tenantSlug}`}
               target="_blank"
-              className="flex items-center gap-2 px-3 py-2 text-sm text-emerald-400/60 hover:text-emerald-400 hover:bg-emerald-500/5 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/5 rounded-lg transition-colors"
             >
               <Calendar className="w-4 h-4" />
               Ver página pública

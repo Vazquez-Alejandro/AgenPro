@@ -116,7 +116,7 @@ export default function BlacklistContent() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+          <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
         </div>
       ) : entries.length === 0 ? (
         <p className="text-white/30 text-center py-12 text-sm">

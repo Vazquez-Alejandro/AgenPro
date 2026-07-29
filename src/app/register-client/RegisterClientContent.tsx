@@ -104,8 +104,8 @@ export default function RegisterClientContent() {
       <div className="w-full max-w-md">
         <BackButton href={redirect} />
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <UserPlus className="w-6 h-6 text-emerald-400" />
+          <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+            <UserPlus className="w-6 h-6 text-amber-400" />
           </div>
           <h1 className="text-2xl font-bold text-white">Crear tu Cuenta</h1>
           <p className="text-white/50 mt-2">Registrate para reservar turnos</p>
@@ -122,7 +122,7 @@ export default function RegisterClientContent() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Juan Pérez"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
               required
             />
           </div>
@@ -137,7 +137,7 @@ export default function RegisterClientContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
               required
             />
           </div>
@@ -152,7 +152,7 @@ export default function RegisterClientContent() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+54 11 1234-5678"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
             />
           </div>
 
@@ -169,7 +169,7 @@ export default function RegisterClientContent() {
                   onChange={(e) =>
                     setCustomValues((prev) => ({ ...prev, [field.name]: e.target.value }))
                   }
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                   required={field.required}
                 />
               ) : (
@@ -180,7 +180,7 @@ export default function RegisterClientContent() {
                     setCustomValues((prev) => ({ ...prev, [field.name]: e.target.value }))
                   }
                   placeholder={field.name}
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                   required={field.required}
                 />
               )}
@@ -197,7 +197,7 @@ export default function RegisterClientContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                 required
                 minLength={6}
               />
@@ -220,7 +220,7 @@ export default function RegisterClientContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -237,7 +237,7 @@ export default function RegisterClientContent() {
           ¿Ya tenés cuenta?{" "}
           <Link
             href={tenantId ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
-            className="text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="text-amber-400 hover:text-amber-300 transition-colors"
           >
             Iniciá sesión
           </Link>

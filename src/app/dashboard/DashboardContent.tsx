@@ -75,7 +75,7 @@ export default function DashboardContent() {
   };
 
   const statusColors: Record<string, string> = {
-    confirmed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    confirmed: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
     completed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   };
@@ -142,7 +142,7 @@ export default function DashboardContent() {
               onClick={() => setView("list")}
               className={`px-3 py-1.5 rounded-md text-sm transition-all ${
                 view === "list"
-                  ? "bg-emerald-500 text-white shadow-sm"
+                  ? "bg-amber-500 text-white shadow-sm"
                   : "text-white/50 hover:text-white"
               }`}
             >
@@ -152,7 +152,7 @@ export default function DashboardContent() {
               onClick={() => setView("calendar")}
               className={`px-3 py-1.5 rounded-md text-sm transition-all ${
                 view === "calendar"
-                  ? "bg-emerald-500 text-white shadow-sm"
+                  ? "bg-amber-500 text-white shadow-sm"
                   : "text-white/50 hover:text-white"
               }`}
             >
@@ -171,7 +171,7 @@ export default function DashboardContent() {
             </h2>
             <button
               onClick={() => router.push("/reservar")}
-              className="mt-4 px-6 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25"
+              className="mt-4 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25"
             >
               Reservar Turno
             </button>
@@ -216,7 +216,7 @@ export default function DashboardContent() {
                     key={day.toISOString()}
                     className={`relative min-h-[72px] p-1.5 rounded-xl border transition-all ${
                       inMonth ? "border-white/5" : "border-transparent"
-                    } ${today ? "ring-1 ring-emerald-500/30" : ""}`}
+                    } ${today ? "ring-1 ring-amber-500/30" : ""}`}
                   >
                     <span
                       className={`text-xs font-medium ${
@@ -231,7 +231,7 @@ export default function DashboardContent() {
                           key={apt.id}
                           className={`text-[10px] px-1 py-0.5 rounded truncate leading-tight ${
                             apt.status === "confirmed"
-                              ? "bg-emerald-500/20 text-emerald-400"
+                              ? "bg-amber-500/20 text-amber-400"
                               : apt.status === "cancelled"
                               ? "bg-red-500/20 text-red-400"
                               : "bg-blue-500/20 text-blue-400"
@@ -264,18 +264,18 @@ export default function DashboardContent() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-emerald-400" />
+                        <Calendar className="w-4 h-4 text-amber-400" />
                         <span className="text-white font-medium">
                           {format(aptDate, "EEEE, dd 'de' MMMM", { locale: es })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-emerald-400" />
+                        <Clock className="w-4 h-4 text-amber-400" />
                         <span className="text-white/70">{apt.time} hs</span>
                       </div>
                       <p className="text-sm text-white/50">{apt.service || apt.service_id?.slice(0, 8)}</p>
                       {apt.is_recurring && (
-                        <p className="text-xs text-emerald-400/60">
+                        <p className="text-xs text-amber-400/60">
                           Semanal{" "}
                           {apt.recurring_end_date
                             ? `(hasta ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})`

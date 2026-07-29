@@ -56,7 +56,7 @@ export default function TenantBookingPage({
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
 
-  const primaryColor = tenant.primary_color || "#10b981";
+  const primaryColor = tenant.primary_color || "#f59e0b";
 
   useEffect(() => {
     fetchServices();

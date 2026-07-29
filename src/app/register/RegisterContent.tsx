@@ -214,7 +214,7 @@ export default function RegisterContent() {
               value={businessName}
               onChange={(e) => handleBusinessNameChange(e.target.value)}
               placeholder="Ej: Peluquería López"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
               required
             />
           </div>
@@ -224,7 +224,7 @@ export default function RegisterContent() {
               <Globe className="w-3.5 h-3.5" />
               URL de tu página
             </label>
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50 transition-all">
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-amber-500/50 focus-within:border-amber-500/50 transition-all">
               <span className="text-white/30 text-sm shrink-0">tudominio.com/</span>
               <input
                 type="text"
@@ -252,7 +252,7 @@ export default function RegisterContent() {
                     onClick={() => setSelectedPlan(plan.name)}
                     className={`relative p-3 rounded-xl border text-left transition-all ${
                       isSelected
-                        ? "border-emerald-500/50 bg-emerald-500/10"
+                        ? "border-amber-500/50 bg-amber-500/10"
                         : "border-white/10 bg-white/5 hover:bg-white/[0.07]"
                     }`}
                   >
@@ -265,7 +265,7 @@ export default function RegisterContent() {
                     <p className="text-lg font-bold text-white mt-0.5">{plan.price}</p>
                     <p className="text-[11px] text-white/50 mt-1 leading-relaxed">{plan.desc}</p>
                     {isSelected && (
-                      <div className="absolute top-2 left-2 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <div className="absolute top-2 left-2 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center">
                         <Check className="w-2.5 h-2.5 text-white" />
                       </div>
                     )}
@@ -289,7 +289,7 @@ export default function RegisterContent() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                   required
                 />
               </div>
@@ -302,7 +302,7 @@ export default function RegisterContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                    className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                     required
                     minLength={6}
                   />
@@ -323,7 +323,7 @@ export default function RegisterContent() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repetí la contraseña"
-                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all"
                   required
                 />
               </div>
@@ -339,7 +339,7 @@ export default function RegisterContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -354,7 +354,7 @@ export default function RegisterContent() {
 
         <p className="mt-6 text-center text-sm text-white/40">
           ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">
+          <Link href="/login" className="text-amber-400 hover:text-amber-300 transition-colors">
             Ingresá
           </Link>
         </p>

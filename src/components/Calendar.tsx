@@ -104,7 +104,7 @@ export default function Calendar({
                 ${isBlocked ? "text-red-400/30 cursor-not-allowed line-through" : ""}
                 ${
                   isSelected
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 scale-105"
+                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25 scale-105"
                     : ""
                 }
                 ${
@@ -112,7 +112,7 @@ export default function Calendar({
                     ? "text-white/70 hover:bg-white/10 hover:text-white"
                     : ""
                 }
-                ${today && !isSelected && isCurrentMonth ? "ring-1 ring-emerald-500/50" : ""}
+                ${today && !isSelected && isCurrentMonth ? "ring-1 ring-amber-500/50" : ""}
               `}
             >
               {format(d, "d")}

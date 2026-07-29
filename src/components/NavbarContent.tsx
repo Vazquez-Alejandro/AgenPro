@@ -59,7 +59,7 @@ export default function NavbarContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 group">
-            <Clock className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+            <Clock className="w-6 h-6 text-amber-400 group-hover:text-amber-300 transition-colors" />
             <span className="text-xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent light:from-black light:to-black/70">
               AgenPro
             </span>
@@ -91,7 +91,7 @@ export default function NavbarContent() {
                 </Link>
                 <Link
                   href="/reservar"
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all"
                 >
                   <Calendar className="w-4 h-4" />
                   Reservar
@@ -99,7 +99,7 @@ export default function NavbarContent() {
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-emerald-400 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-amber-400 transition-colors"
                   >
                     <Shield className="w-4 h-4" />
                     Admin
@@ -117,7 +117,7 @@ export default function NavbarContent() {
               <>
                 <Link
                   href="/turno"
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all"
                 >
                   <Calendar className="w-4 h-4" />
                   Sacar Turno

@@ -169,7 +169,7 @@ export default function AvailabilityContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function AvailabilityContent() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25 disabled:opacity-50"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -204,7 +204,7 @@ export default function AvailabilityContent() {
           <button
             onClick={() => setFilterByService((prev) => !prev)}
             className={`relative w-11 h-6 rounded-full transition-all shrink-0 ${
-              filterByService ? "bg-emerald-500" : "bg-white/10"
+              filterByService ? "bg-amber-500" : "bg-white/10"
             }`}
           >
             <div
@@ -218,7 +218,7 @@ export default function AvailabilityContent() {
           <select
             value={selectedServiceId}
             onChange={(e) => setSelectedServiceId(e.target.value)}
-            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 min-w-[180px]"
+            className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 min-w-[180px]"
           >
             {services.map((s) => (
               <option key={s.id} value={s.id} className="bg-gray-900">
@@ -257,7 +257,7 @@ export default function AvailabilityContent() {
                   <button
                     onClick={() => toggleDay(day.day_of_week)}
                     className={`w-10 h-6 rounded-full transition-all ${
-                      day.enabled ? "bg-emerald-500" : "bg-white/10"
+                      day.enabled ? "bg-amber-500" : "bg-white/10"
                     }`}
                   >
                     <div
@@ -275,7 +275,7 @@ export default function AvailabilityContent() {
                       updateField(day.day_of_week, "start_time", e.target.value)
                     }
                     disabled={!day.enabled}
-                    className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-30"
+                    className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-30"
                   />
                 </td>
                 <td className="py-3 px-4">
@@ -286,7 +286,7 @@ export default function AvailabilityContent() {
                       updateField(day.day_of_week, "end_time", e.target.value)
                     }
                     disabled={!day.enabled}
-                    className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-30"
+                    className="px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-30"
                   />
                 </td>
                 <td className="py-3 px-4">
@@ -304,7 +304,7 @@ export default function AvailabilityContent() {
                     min={15}
                     max={240}
                     step={15}
-                    className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-30"
+                    className="w-20 px-2 py-1 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 disabled:opacity-30"
                   />
                 </td>
               </tr>

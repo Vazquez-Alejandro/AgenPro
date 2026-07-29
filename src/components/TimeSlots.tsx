@@ -19,7 +19,7 @@ export default function TimeSlots({
     return (
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-4 h-4 text-emerald-400" />
+          <Clock className="w-4 h-4 text-amber-400" />
           <h3 className="text-sm font-medium text-white/70">
             Horarios Disponibles
           </h3>
@@ -34,7 +34,7 @@ export default function TimeSlots({
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-4 h-4 text-emerald-400" />
+        <Clock className="w-4 h-4 text-amber-400" />
         <h3 className="text-sm font-medium text-white/70">
           Horarios Disponibles
         </h3>
@@ -54,7 +54,7 @@ export default function TimeSlots({
                 py-3 px-4 rounded-xl text-sm font-medium transition-all
                 ${
                   isSelected
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-400"
+                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25 ring-2 ring-amber-400"
                     : ""
                 }
                 ${

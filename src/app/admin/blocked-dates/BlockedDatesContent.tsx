@@ -50,7 +50,7 @@ export default function BlockedDatesContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
       </div>
     );
   }
@@ -69,7 +69,7 @@ export default function BlockedDatesContent() {
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
             />
           </div>
           <div>
@@ -81,13 +81,13 @@ export default function BlockedDatesContent() {
               value={newReason}
               onChange={(e) => setNewReason(e.target.value)}
               placeholder="Feriado, capacitación..."
-              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 w-60"
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 w-60"
             />
           </div>
           <button
             onClick={addDate}
             disabled={!newDate}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-400 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
             Agregar

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   logo_url TEXT,
-  primary_color TEXT DEFAULT '#10b981',
+  primary_color TEXT DEFAULT '#f59e0b',
   subscription_status TEXT DEFAULT 'free',
   turnos_limit INT DEFAULT 30,
   staff_limit INT DEFAULT 1,
