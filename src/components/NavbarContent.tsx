@@ -61,7 +61,7 @@ export default function NavbarContent() {
           <Link href="/" className="flex items-center gap-2 group">
             <Clock className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
             <span className="text-xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent light:from-black light:to-black/70">
-              TurnosOnline
+              AgenPro
             </span>
           </Link>
 

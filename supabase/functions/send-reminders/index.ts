@@ -4,7 +4,7 @@ import { Resend } from "https://esm.sh/resend@4.1.2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
-const emailFrom = Deno.env.get("EMAIL_FROM") || "TurnosOnline <noreply@tu-dominio.com>";
+const emailFrom = Deno.env.get("EMAIL_FROM") || "AgenPro <noreply@tu-dominio.com>";
 
 if (!supabaseUrl || !supabaseKey || !resendApiKey) {
   console.error("Missing required environment variables");
@@ -54,7 +54,7 @@ Deno.serve(async () => {
               <p style="margin:0 0 8px;color:#ededed"><strong>Horario:</strong> ${apt.time} hs</p>
               <p style="margin:0;color:#ededed"><strong>Servicio:</strong> ${apt.service}</p>
             </div>
-            <p style="color:#52525b;font-size:12px;margin:0">TurnosOnline — Reserva de Turnos</p>
+            <p style="color:#52525b;font-size:12px;margin:0">AgenPro — Reserva de Turnos</p>
           </div>
         `,
       });

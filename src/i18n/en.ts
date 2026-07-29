@@ -2,7 +2,7 @@ import type { Translations } from "./es";
 
 export const en: Translations = {
   app: {
-    name: "TurnosOnline",
+    name: "AgenPro",
     tagline: "Online Appointment Booking",
   },
   nav: {

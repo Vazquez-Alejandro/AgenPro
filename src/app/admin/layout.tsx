@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Admin - TurnosOnline",
+  title: "Admin - AgenPro",
 };
 
 const links = [

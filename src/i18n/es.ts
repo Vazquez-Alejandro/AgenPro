@@ -1,7 +1,7 @@
 export const es = {
   app: {
-    name: "TurnosOnline",
-    tagline: "Reserva de Turnos Online",
+    name: "AgenPro",
+    tagline: "Reserva de Turnos",
   },
   nav: {
     myAppointments: "Mis Turnos",

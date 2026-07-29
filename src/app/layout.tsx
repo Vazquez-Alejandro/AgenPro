@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TurnosOnline - Reserva de Turnos",
-  description: "Sistema de reserva de turnos online",
+  title: "AgenPro - Reserva de Turnos",
+  description: "Sistema de reserva de turnos online para negocios",
 };
 
 export default function RootLayout({

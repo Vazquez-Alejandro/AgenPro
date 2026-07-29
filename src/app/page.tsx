@@ -81,7 +81,7 @@ export default function Home() {
 
       <footer className="border-t border-white/5 py-8">
         <p className="text-center text-sm text-white/30">
-          TurnosOnline &copy; {new Date().getFullYear()}
+          AgenPro &copy; {new Date().getFullYear()}
         </p>
       </footer>
     </div>
