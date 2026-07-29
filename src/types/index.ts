@@ -21,6 +21,7 @@ export interface Profile {
   role: "owner" | "admin" | "staff" | "client";
   full_name: string | null;
   is_admin: boolean;
+  dni: string | null;
   custom_data: Record<string, string>;
   created_at: string;
 }

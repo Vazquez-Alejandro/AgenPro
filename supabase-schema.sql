@@ -40,6 +40,7 @@ CREATE POLICY "Tenant owners can update"
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'owner' CHECK (role IN ('owner', 'admin', 'staff'));
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS dni TEXT;
 
 -- =====================
 -- Availability (multi-tenant)

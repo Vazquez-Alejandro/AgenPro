@@ -20,6 +20,10 @@ import {
   Phone,
   Scissors,
   CreditCard,
+  Eye,
+  EyeOff,
+  IdCard,
+  Lock,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useLang } from "@/contexts/LangContext";
@@ -45,6 +49,9 @@ export default function TurnoContent() {
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [clientDni, setClientDni] = useState("");
+  const [clientPassword, setClientPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -260,6 +267,29 @@ export default function TurnoContent() {
     setLoading(true);
     setError("");
 
+    // Register or login user
+    let userId: string | null = null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      userId = user.id;
+    } else if (clientPassword) {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: clientEmail,
+        password: clientPassword,
+      });
+      if (!signUpError && data.user) {
+        userId = data.user.id;
+        // Save DNI and name in profiles
+        await supabase.from("profiles").upsert({
+          id: data.user.id,
+          full_name: clientName.trim(),
+          dni: clientDni.trim() || null,
+          role: "client",
+          is_admin: false,
+        });
+      }
+    }
+
     const dateStr = format(selectedDate!, "yyyy-MM-dd");
 
     const res = await fetch("/api/public-appointments", {
@@ -274,6 +304,7 @@ export default function TurnoContent() {
         client_phone: clientPhone.trim() || null,
         payment_intent_id: paymentIntentId,
         payment_method: paymentMethod,
+        user_id: userId,
       }),
     });
 
@@ -462,6 +493,44 @@ export default function TurnoContent() {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                <IdCard className="w-3.5 h-3.5" />
+                DNI
+              </label>
+              <input
+                type="text"
+                value={clientDni}
+                onChange={(e) => setClientDni(e.target.value)}
+                placeholder="Opcional"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" />
+                Contraseña
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={clientPassword}
+                  onChange={(e) => setClientPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full px-4 py-2.5 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-white/30 mt-1">Opcional — creá tu cuenta para ver tus turnos</p>
+            </div>
+
             {selectedService && selectedService.price > 0 && (
               <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
                 <p className="text-sm text-white/50">Total a pagar</p>
@@ -475,6 +544,10 @@ export default function TurnoContent() {
               onClick={() => {
                 if (!clientName.trim() || !clientEmail.trim()) {
                   setError("Completá nombre y email");
+                  return;
+                }
+                if (clientPassword && clientPassword.length < 6) {
+                  setError("La contraseña debe tener al menos 6 caracteres");
                   return;
                 }
                 goToPayment();
