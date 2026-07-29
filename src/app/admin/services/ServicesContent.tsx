@@ -7,12 +7,7 @@ import { Plus, Loader2, X, Clock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/contexts/ToastContext";
 
-function formatPrice(cents: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(cents / 100);
-}
+import { formatPrice } from "@/lib/utils";
 
 export default function ServicesContent() {
   const [services, setServices] = useState<Service[]>([]);

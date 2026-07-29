@@ -13,6 +13,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
+  const rateCheck = checkRateLimit(`appointments:${user.id}`, 10, 60000);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: "Demasiadas reservas. Esperá un minuto antes de intentar de nuevo." },
+      { status: 429 }
+    );
+  }
+
   const body = await request.json();
   const { date, time, service, service_id, notes, recurring, recurring_end_date } = body;
 

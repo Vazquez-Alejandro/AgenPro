@@ -23,12 +23,7 @@ import {
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
 
-function formatPrice(cents: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(cents / 100);
-}
+import { formatPrice } from "@/lib/utils";
 
 type AppWithService = Appointment & { serviceObj?: Service };
 

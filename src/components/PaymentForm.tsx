@@ -34,12 +34,7 @@ const elementOptions = {
   },
 };
 
-function formatPrice(cents: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(cents / 100);
-}
+import { formatPrice } from "@/lib/utils";
 
 export default function PaymentForm({
   clientSecret,

@@ -42,12 +42,7 @@ function planDisplayName(name: string): string {
   return names[name] || name;
 }
 
-function formatPrice(cents: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-  }).format(cents / 100);
-}
+import { formatPrice } from "@/lib/utils";
 
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
   blacklist: <Ban className="w-4 h-4" />,
