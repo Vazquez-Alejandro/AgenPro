@@ -29,16 +29,14 @@ import { FEATURES, DEFAULT_FEATURES } from "@/types";
 
 const PLAN_COLORS: Record<string, string> = {
   free: "#6b7280",
-  inicial: "#f59e0b",
-  profesional: "#3b82f6",
+  pro: "#f59e0b",
   premium: "#f59e0b",
 };
 
 function planDisplayName(name: string): string {
   const names: Record<string, string> = {
     free: "Gratuito",
-    inicial: "Inicial",
-    profesional: "Profesional",
+    pro: "Pro",
     premium: "Premium",
   };
   return names[name] || name;
@@ -577,9 +575,8 @@ export default function SettingsContent() {
             const isOn = features[key];
             const isAvailable =
               tenant.subscription_status === "premium" ||
-              (meta.plan === "inicial" && ["inicial", "profesional", "premium"].includes(tenant.subscription_status)) ||
-              (meta.plan === "profesional" && ["profesional", "premium"].includes(tenant.subscription_status)) ||
-              (meta.plan === "premium" && tenant.subscription_status === "premium");
+              tenant.subscription_status === "pro" ||
+              (meta.plan === "pro" && ["pro", "premium"].includes(tenant.subscription_status));
 
             return (
               <div

@@ -18,24 +18,17 @@ const PLANS = [
     popular: false,
   },
   {
-    name: "inicial",
-    label: "Inicial",
+    name: "pro",
+    label: "Pro",
     price: "$12/mes",
-    desc: "100 turnos/mes, 1 usuario. Para negocios en crecimiento.",
-    popular: false,
-  },
-  {
-    name: "profesional",
-    label: "Profesional",
-    price: "$30/mes",
-    desc: "500 turnos/mes, 5 usuarios. Alertas avanzadas y blacklist.",
+    desc: "200 turnos/mes, 3 usuarios. Alertas y funciones avanzadas.",
     popular: true,
   },
   {
     name: "premium",
     label: "Premium",
-    price: "$75/mes",
-    desc: "Ilimitado. Todo incluido: confirmación WhatsApp, recordatorios, depósito obligatorio.",
+    price: "$29/mes",
+    desc: "Ilimitado. Todo incluido: WhatsApp, recordatorios, depósito.",
     popular: false,
   },
 ];
@@ -133,12 +126,12 @@ export default function RegisterContent() {
     }
 
     const planLimits: Record<string, { turnos: number; staff: number }> = {
-      inicial: { turnos: 100, staff: 1 },
-      profesional: { turnos: 500, staff: 5 },
+      free: { turnos: 30, staff: 1 },
+      pro: { turnos: 200, staff: 3 },
       premium: { turnos: 999999, staff: 999999 },
     };
 
-    const limits = planLimits[selectedPlan] || { turnos: 100, staff: 1 };
+    const limits = planLimits[selectedPlan] || { turnos: 30, staff: 1 };
 
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")

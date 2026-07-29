@@ -124,7 +124,8 @@ export interface PlanDefinition {
 
 export const PLAN_LIMITS: Record<string, { appointments: number; staff: number }> = {
   free: { appointments: 30, staff: 1 },
-  pro: { appointments: 999999, staff: 999 },
+  pro: { appointments: 200, staff: 3 },
+  premium: { appointments: 999999, staff: 999 },
 };
 
 export const FEATURES: Record<string, { label: string; desc: string; plan: string }> = {

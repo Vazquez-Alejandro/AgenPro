@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const VALID_PLANS = ["free", "inicial", "profesional", "premium"];
+const VALID_PLANS = ["free", "pro", "premium"];
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     .eq("id", profile.tenant_id)
     .single();
 
-  const planOrder = ["free", "inicial", "profesional", "premium"];
+  const planOrder = ["free", "pro", "premium"];
   const currentIdx = planOrder.indexOf(currentTenant?.subscription_status || "free");
   const newIdx = planOrder.indexOf(planName);
 
