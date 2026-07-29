@@ -5,12 +5,16 @@ import { createClient } from "@/lib/supabase/client";
 import type { BlockedDate } from "@/types";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
+import Pagination from "@/components/Pagination";
+
+const PAGE_SIZE = 10;
 
 export default function BlockedDatesContent() {
   const [dates, setDates] = useState<BlockedDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [newDate, setNewDate] = useState("");
   const [newReason, setNewReason] = useState("");
+  const [page, setPage] = useState(1);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
 
@@ -112,7 +116,7 @@ export default function BlockedDatesContent() {
                 </td>
               </tr>
             ) : (
-              dates.map((d) => (
+              dates.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((d) => (
                 <tr key={d.id} className="border-b border-white/5 last:border-0">
                   <td className="py-3 px-4 text-white">
                     {new Date(d.date + "T12:00:00").toLocaleDateString("es-AR", {
@@ -136,6 +140,11 @@ export default function BlockedDatesContent() {
             )}
           </tbody>
         </table>
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(dates.length / PAGE_SIZE)}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

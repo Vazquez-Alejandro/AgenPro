@@ -24,7 +24,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "AgenPro - Reserva de Turnos",
-  description: "Sistema de reserva de turnos online para negocios",
+  description: "Sistema de reserva de turnos online para negocios. Tus clientes reservan 24/7 desde el celular.",
+  openGraph: {
+    title: "AgenPro - Reserva de Turnos",
+    description: "Sistema de reserva de turnos online para negocios. Tus clientes reservan 24/7 desde el celular.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "AgenPro",
+  },
 };
 
 export default function RootLayout({

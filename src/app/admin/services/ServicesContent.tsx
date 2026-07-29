@@ -6,8 +6,11 @@ import type { Service } from "@/types";
 import { Plus, Loader2, X, Clock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/contexts/ToastContext";
+import Pagination from "@/components/Pagination";
 
 import { formatPrice } from "@/lib/utils";
+
+const PAGE_SIZE = 10;
 
 export default function ServicesContent() {
   const [services, setServices] = useState<Service[]>([]);
@@ -16,6 +19,7 @@ export default function ServicesContent() {
   const [newDuration, setNewDuration] = useState(60);
   const [newPrice, setNewPrice] = useState(0);
   const [newCleaning, setNewCleaning] = useState(0);
+  const [page, setPage] = useState(1);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
   const { toast } = useToast();
@@ -149,40 +153,47 @@ export default function ServicesContent() {
             No hay servicios configurados
           </p>
         ) : (
-          services.map((s) => (
-            <div
-              key={s.id}
-              className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl"
-            >
-                <div className="flex items-center gap-4">
-                <button
-                  onClick={() => toggleActive(s)}
-                  className={`w-10 h-6 rounded-full transition-all ${
-                    s.active ? "bg-amber-500" : "bg-white/10"
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
-                      s.active ? "translate-x-5" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-                <div>
-                  <p className="text-white font-medium">{s.name}</p>
-                  <p className="text-sm text-white/40">
-                    {s.duration} min &middot; {formatPrice(s.price)}
-                    {s.cleaning_time > 0 && ` &middot; +${s.cleaning_time}min limpieza`}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => deleteService(s.id)}
-                className="p-2 text-white/30 hover:text-red-400 transition-colors"
+          <>
+            {services.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl"
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))
+                  <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => toggleActive(s)}
+                    className={`w-10 h-6 rounded-full transition-all ${
+                      s.active ? "bg-amber-500" : "bg-white/10"
+                    }`}
+                  >
+                    <div
+                      className={`w-4 h-4 bg-white rounded-full shadow transition-all ${
+                        s.active ? "translate-x-5" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <div>
+                    <p className="text-white font-medium">{s.name}</p>
+                    <p className="text-sm text-white/40">
+                      {s.duration} min &middot; {formatPrice(s.price)}
+                      {s.cleaning_time > 0 && ` &middot; +${s.cleaning_time}min limpieza`}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => deleteService(s.id)}
+                  className="p-2 text-white/30 hover:text-red-400 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <Pagination
+              page={page}
+              totalPages={Math.ceil(services.length / PAGE_SIZE)}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
     </div>

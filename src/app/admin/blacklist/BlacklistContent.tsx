@@ -6,6 +6,9 @@ import type { BlacklistEntry } from "@/types";
 import { Plus, Trash2, Loader2, Ban } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/contexts/ToastContext";
+import Pagination from "@/components/Pagination";
+
+const PAGE_SIZE = 10;
 
 export default function BlacklistContent() {
   const { tenant } = useTenant();
@@ -15,6 +18,7 @@ export default function BlacklistContent() {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [page, setPage] = useState(1);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
 
@@ -124,7 +128,7 @@ export default function BlacklistContent() {
         </p>
       ) : (
         <div className="space-y-2">
-          {entries.map((entry) => (
+          {entries.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((entry) => (
             <div
               key={entry.id}
               className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded-xl p-4"
@@ -145,6 +149,11 @@ export default function BlacklistContent() {
               </button>
             </div>
           ))}
+          <Pagination
+            page={page}
+            totalPages={Math.ceil(entries.length / PAGE_SIZE)}
+            onPageChange={setPage}
+          />
         </div>
       )}
     </div>

@@ -10,6 +10,7 @@ import {
   Scissors,
   Settings,
   UserX,
+  Users,
   Menu,
   X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const links = [
   { href: "/admin/blocked-dates", label: "Días Bloqueados", icon: Ban },
   { href: "/admin/blacklist", label: "Clientes Bloqueados", icon: UserX },
   { href: "/admin/services", label: "Servicios", icon: Scissors },
+  { href: "/admin/staff", label: "Equipo", icon: Users },
   { href: "/admin/settings", label: "Configuración", icon: Settings },
 ];
 
