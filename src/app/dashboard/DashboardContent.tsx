@@ -28,6 +28,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { CardSkeleton, Skeleton } from "@/components/Skeleton";
+import { useLang } from "@/contexts/LangContext";
 
 export default function DashboardContent() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -37,12 +38,12 @@ export default function DashboardContent() {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const router = useRouter();
   const supabase = useRef(createClient()).current;
+  const { t } = useLang();
 
   const fetchAppointments = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    // Get user's tenant_id
     const { data: profile } = await supabase
       .from("profiles")
       .select("tenant_id")
@@ -52,7 +53,6 @@ export default function DashboardContent() {
     let query = supabase.from("appointments").select("*");
 
     if (profile?.tenant_id) {
-      // Show appointments belonging to user OR their tenant
       query = query.or(`user_id.eq.${user.id},tenant_id.eq.${profile.tenant_id}`);
     } else {
       query = query.eq("user_id", user.id);
@@ -81,9 +81,9 @@ export default function DashboardContent() {
   };
 
   const statusLabels: Record<string, string> = {
-    confirmed: "Confirmado",
-    cancelled: "Cancelado",
-    completed: "Completado",
+    confirmed: t.dashboard.status.confirmed,
+    cancelled: t.dashboard.status.cancelled,
+    completed: t.dashboard.status.completed,
   };
 
   const aptMap = new Map<string, Appointment[]>();
@@ -131,10 +131,10 @@ export default function DashboardContent() {
         <BackButton href="/" />
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">Mis Turnos</h1>
+            <h1 className="text-2xl font-bold text-white">{t.dashboard.title}</h1>
             <p className="text-white/50 mt-1">
               {appointments.length}{" "}
-              {appointments.length === 1 ? "turno registrado" : "turnos registrados"}
+              {appointments.length === 1 ? t.dashboard.recurring : t.dashboard.title}
             </p>
           </div>
           <div className="flex bg-white/5 rounded-lg p-0.5">
@@ -167,13 +167,13 @@ export default function DashboardContent() {
               <Calendar className="w-8 h-8 text-white/30" />
             </div>
             <h2 className="text-lg font-medium text-white/50 mb-2">
-              No tenés turnos reservados
+              {t.dashboard.empty}
             </h2>
             <button
               onClick={() => router.push("/reservar")}
               className="mt-4 px-6 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25"
             >
-              Reservar Turno
+              {t.dashboard.bookOne}
             </button>
           </div>
         ) : view === "calendar" ? (
@@ -242,7 +242,7 @@ export default function DashboardContent() {
                       ))}
                       {dayAppts.length > 3 && (
                         <div className="text-[10px] text-white/30 px-1">
-                          +{dayAppts.length - 3} más
+                          +{dayAppts.length - 3}
                         </div>
                       )}
                     </div>
@@ -276,9 +276,9 @@ export default function DashboardContent() {
                       <p className="text-sm text-white/50">{apt.service || apt.service_id?.slice(0, 8)}</p>
                       {apt.is_recurring && (
                         <p className="text-xs text-amber-400/60">
-                          Semanal{" "}
+                          {t.dashboard.recurring}{" "}
                           {apt.recurring_end_date
-                            ? `(hasta ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})`
+                            ? `(${t.dashboard.until} ${format(new Date(apt.recurring_end_date + "T12:00:00"), "dd/MM/yyyy")})`
                             : ""}
                         </p>
                       )}
@@ -293,7 +293,7 @@ export default function DashboardContent() {
                         }`}
                       >
                         {isPast && apt.status === "confirmed"
-                          ? "Vencido"
+                          ? t.dashboard.status.expired
                           : statusLabels[apt.status]}
                       </span>
                       {apt.status === "confirmed" && !isPast && (
@@ -307,7 +307,7 @@ export default function DashboardContent() {
                           ) : (
                             <XCircle className="w-3 h-3" />
                           )}
-                          Cancelar
+                          {t.dashboard.cancel}
                         </button>
                       )}
                     </div>

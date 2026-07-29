@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { useLang } from "@/contexts/LangContext";
 
 export default function LoginContent() {
   const [email, setEmail] = useState("");
@@ -20,6 +21,7 @@ export default function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useRef(createClient()).current;
+  const { t } = useLang();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function LoginContent() {
     if (error) {
       setError(
         error.message === "Invalid login credentials"
-          ? "Email o contraseña incorrectos"
+          ? t.auth.errors.invalidCredentials
           : error.message
       );
       setLoading(false);
@@ -67,14 +69,14 @@ export default function LoginContent() {
       <div className="w-full max-w-sm">
         <BackButton href="/" />
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Bienvenido</h1>
-          <p className="text-white/50 mt-2">Ingresá a tu cuenta</p>
+          <h1 className="text-2xl font-bold text-white">{t.auth.welcome}</h1>
+          <p className="text-white/50 mt-2">{t.auth.welcomeBack}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5">
-              Email
+              {t.auth.email}
             </label>
             <input
               type="email"
@@ -88,7 +90,7 @@ export default function LoginContent() {
 
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5">
-              Contraseña
+              {t.auth.password}
             </label>
             <div className="relative">
               <input
@@ -112,7 +114,7 @@ export default function LoginContent() {
               onClick={() => setResetEmail(email)}
               className="text-xs text-amber-400/60 hover:text-amber-400 mt-1.5 transition-colors"
             >
-              ¿Olvidaste tu contraseña?
+              {t.auth.forgotPassword}
             </button>
           </div>
 
@@ -132,7 +134,7 @@ export default function LoginContent() {
             ) : (
               <>
                 <LogIn className="w-4 h-4" />
-                Ingresar
+                {t.auth.login}
               </>
             )}
           </button>
@@ -140,15 +142,15 @@ export default function LoginContent() {
 
         <div className="mt-6 text-center text-sm text-white/40 space-y-1">
           <p>
-            ¿Querés registrar tu negocio?{" "}
+            {t.auth.registerBusiness}{" "}
             <Link href="/register" className="text-amber-400 hover:text-amber-300 transition-colors">
-              Crear cuenta profesional
+              {t.auth.createBusinessAccount}
             </Link>
           </p>
           <p>
-            ¿Querés reservar un turno?{" "}
+            {t.auth.registerClient}{" "}
             <Link href="/register-client" className="text-amber-400 hover:text-amber-300 transition-colors">
-              Crear cuenta de cliente
+              {t.auth.createClientAccount}
             </Link>
           </p>
         </div>
@@ -158,22 +160,22 @@ export default function LoginContent() {
             <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm">
               {resetSent ? (
                 <>
-                  <h3 className="text-lg font-semibold text-white mb-2">Email enviado</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{t.auth.resetSent}</h3>
                   <p className="text-sm text-white/50 mb-4">
-                    Revisá tu casilla de correo para restablecer tu contraseña.
+                    {t.auth.resetSentDesc}
                   </p>
                   <button
                     onClick={() => { setResetSent(false); setResetEmail(""); }}
                     className="w-full px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all"
                   >
-                    Cerrar
+                    {t.auth.close}
                   </button>
                 </>
               ) : (
                 <form onSubmit={handleResetPassword}>
-                  <h3 className="text-lg font-semibold text-white mb-2">Restablecer contraseña</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{t.auth.resetPassword}</h3>
                   <p className="text-sm text-white/50 mb-4">
-                    Te enviaremos un email con las instrucciones.
+                    {t.auth.resetPasswordDesc}
                   </p>
                   <input
                     type="email"
@@ -191,14 +193,14 @@ export default function LoginContent() {
                       onClick={() => { setResetEmail(""); setResetError(""); }}
                       className="flex-1 px-4 py-2.5 bg-white/5 text-white/60 rounded-xl font-medium hover:bg-white/10 transition-all"
                     >
-                      Cancelar
+                      {t.auth.cancel}
                     </button>
                     <button
                       type="submit"
                       disabled={resetLoading}
                       className="flex-1 px-4 py-2.5 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
                     >
-                      {resetLoading ? "Enviando..." : "Enviar"}
+                      {resetLoading ? t.auth.sending : t.auth.send}
                     </button>
                   </div>
                 </form>

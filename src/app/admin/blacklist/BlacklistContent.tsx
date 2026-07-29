@@ -6,6 +6,7 @@ import type { BlacklistEntry } from "@/types";
 import { Plus, Trash2, Loader2, Ban } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useLang } from "@/contexts/LangContext";
 import Pagination from "@/components/Pagination";
 
 const PAGE_SIZE = 10;
@@ -21,6 +22,7 @@ export default function BlacklistContent() {
   const [page, setPage] = useState(1);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
+  const { t } = useLang();
 
   const fetchEntries = async () => {
     if (!tenant) return;
@@ -78,12 +80,12 @@ export default function BlacklistContent() {
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-bold text-white flex items-center gap-2">
         <Ban className="w-6 h-6 text-red-400" />
-        Clientes Bloqueados
+        {t.admin.blacklistPage.title}
       </h1>
 
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-5 space-y-3">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">
-          Bloquear nuevo cliente
+          {t.admin.blacklistPage.add}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input
@@ -97,14 +99,14 @@ export default function BlacklistContent() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            placeholder={t.admin.blacklistPage.email}
             className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
           />
           <input
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Motivo (opcional)"
+            placeholder={t.admin.blacklistPage.reason}
             className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50"
           />
         </div>
@@ -114,7 +116,7 @@ export default function BlacklistContent() {
           className="flex items-center gap-1.5 px-4 py-2 bg-red-500/20 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/30 transition-all disabled:opacity-50"
         >
           {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          Bloquear
+          {t.admin.blacklistPage.save}
         </button>
       </div>
 

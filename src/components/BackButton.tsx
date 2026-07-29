@@ -2,8 +2,11 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useLang } from "@/contexts/LangContext";
 
 export default function BackButton({ href }: { href?: string }) {
+  const { t } = useLang();
+
   if (href) {
     return (
       <Link
@@ -11,7 +14,7 @@ export default function BackButton({ href }: { href?: string }) {
         className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors mb-4 cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
-        Volver
+        {t.common.back}
       </Link>
     );
   }
@@ -22,7 +25,7 @@ export default function BackButton({ href }: { href?: string }) {
       className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors mb-4 cursor-pointer"
     >
       <ArrowLeft className="w-4 h-4" />
-      Volver
+      {t.common.back}
     </button>
   );
 }

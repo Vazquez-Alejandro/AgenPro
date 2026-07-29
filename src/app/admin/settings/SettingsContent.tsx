@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
+import { useLang } from "@/contexts/LangContext";
 import type { PlanDefinition, CustomField } from "@/types";
 import { FEATURES, DEFAULT_FEATURES } from "@/types";
 
@@ -77,6 +78,7 @@ export default function SettingsContent() {
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useLang();
 
   useEffect(() => {
     if (tenant) {
@@ -224,7 +226,7 @@ export default function SettingsContent() {
 
   return (
     <div className="space-y-8 max-w-2xl">
-      <h1 className="text-2xl font-bold text-white">Configuración del Negocio</h1>
+      <h1 className="text-2xl font-bold text-white">{t.admin.settingsPage.title}</h1>
 
       {/* Logo */}
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
@@ -260,10 +262,10 @@ export default function SettingsContent() {
               ) : (
                 <Upload className="w-4 h-4" />
               )}
-              {logoUrl ? "Cambiar logo" : "Subir logo"}
+              {logoUrl ? t.admin.settingsPage.changeLogo : t.admin.settingsPage.uploadLogo}
             </button>
             <p className="text-xs text-white/30 mt-2">
-              PNG, JPG. Recomendado: 256x256px
+              {t.admin.settingsPage.logoFormat}
             </p>
           </div>
         </div>
@@ -272,13 +274,13 @@ export default function SettingsContent() {
       {/* Info */}
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">
-          Información
+          {t.admin.settingsPage.info}
         </h2>
 
         <div>
           <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5" />
-            Nombre del negocio
+            {t.admin.settingsPage.businessName}
           </label>
           <input
             type="text"
@@ -291,7 +293,7 @@ export default function SettingsContent() {
         <div>
           <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5" />
-            URL pública
+            {t.admin.settingsPage.publicUrl}
           </label>
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
             <span className="text-white/30 text-sm">tudominio.com/</span>
@@ -302,7 +304,7 @@ export default function SettingsContent() {
         <div>
           <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
             <Palette className="w-3.5 h-3.5" />
-            Color principal
+            {t.admin.settingsPage.primaryColor}
           </label>
           <div className="flex items-center gap-3">
             <input
@@ -337,7 +339,7 @@ export default function SettingsContent() {
           ) : (
             <Save className="w-4 h-4" />
           )}
-          {saved ? "Guardado" : "Guardar Cambios"}
+          {saved ? t.admin.settingsPage.saved : t.admin.settingsPage.save}
         </button>
       </div>
 
@@ -345,10 +347,10 @@ export default function SettingsContent() {
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
           <Users className="w-4 h-4 text-amber-400" />
-          Campos personalizados (registro de clientes)
+          {t.admin.settingsPage.customFields}
         </h2>
         <p className="text-xs text-white/30 mb-4">
-          Definí campos adicionales que los clientes completarán al registrarse. Ej: DNI, dirección, fecha de nacimiento.
+          {t.admin.settingsPage.customFieldsDesc}
         </p>
 
         {customFields.length > 0 && (
@@ -361,7 +363,7 @@ export default function SettingsContent() {
                 <span className="text-sm text-white font-medium flex-1">{field.name}</span>
                 <span className="text-[10px] text-white/30 uppercase tracking-wider">{field.type}</span>
                 {field.required && (
-                  <span className="text-[10px] text-red-400 font-medium">Obligatorio</span>
+                  <span className="text-[10px] text-red-400 font-medium">{t.admin.settingsPage.required}</span>
                 )}
                 <button
                   onClick={() => removeCustomField(i)}
@@ -376,7 +378,7 @@ export default function SettingsContent() {
 
         <div className="flex items-end gap-2">
           <div className="flex-1">
-            <label className="block text-xs font-medium text-white/50 mb-1">Nombre del campo</label>
+            <label className="block text-xs font-medium text-white/50 mb-1">{t.admin.settingsPage.fieldName}</label>
             <input
               type="text"
               value={newFieldName}
@@ -386,16 +388,16 @@ export default function SettingsContent() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1">Tipo</label>
+            <label className="block text-xs font-medium text-white/50 mb-1">{t.admin.settingsPage.fieldType}</label>
             <select
               value={newFieldType}
               onChange={(e) => setNewFieldType(e.target.value as CustomField["type"])}
               className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all"
             >
-              <option value="text">Texto</option>
-              <option value="number">Número</option>
-              <option value="date">Fecha</option>
-              <option value="tel">Teléfono</option>
+              <option value="text">{t.admin.settingsPage.types.text}</option>
+              <option value="number">{t.admin.settingsPage.types.number}</option>
+              <option value="date">{t.admin.settingsPage.types.date}</option>
+              <option value="tel">{t.admin.settingsPage.types.tel}</option>
             </select>
           </div>
           <label className="flex items-center gap-1.5 pb-2 cursor-pointer">
@@ -405,7 +407,7 @@ export default function SettingsContent() {
               onChange={(e) => setNewFieldRequired(e.target.checked)}
               className="accent-amber-500"
             />
-            <span className="text-xs text-white/50">Oblig.</span>
+            <span className="text-xs text-white/50">{t.admin.settingsPage.fieldRequired}</span>
           </label>
           <button
             onClick={addCustomField}
@@ -421,7 +423,7 @@ export default function SettingsContent() {
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
           <Crown className="w-4 h-4 text-amber-400" />
-          Plan actual
+          {t.admin.settingsPage.plan}
         </h2>
 
         <div className="flex items-center gap-3 mb-4">
@@ -487,7 +489,7 @@ export default function SettingsContent() {
                     ) : (
                       <ArrowUp className="w-3 h-3" />
                     )}
-                    {plan.price_monthly_cents === 0 ? "Degradar" : "Seleccionar"}
+                    {plan.price_monthly_cents === 0 ? t.admin.settingsPage.downgrade : t.admin.settingsPage.selectPlan}
                   </button>
                 )}
               </div>
@@ -500,7 +502,7 @@ export default function SettingsContent() {
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
           <ToggleRight className="w-4 h-4 text-amber-400" />
-          Funciones Premium
+          {t.admin.settingsPage.features}
         </h2>
         <p className="text-xs text-white/30 mb-4">
           Activá features según las necesidades de tu negocio. Todo viene apagado por defecto.

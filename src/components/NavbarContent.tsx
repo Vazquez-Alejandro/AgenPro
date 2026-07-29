@@ -14,7 +14,7 @@ export default function NavbarContent() {
   const router = useRouter();
   const supabase = createClient();
   const { theme, toggle } = useTheme();
-  const { locale, setLocale } = useLang();
+  const { locale, t, setLocale } = useLang();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -87,14 +87,14 @@ export default function NavbarContent() {
                   className="flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  Mis Turnos
+                  {t.nav.myAppointments}
                 </Link>
                 <Link
                   href="/reservar"
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all"
                 >
                   <Calendar className="w-4 h-4" />
-                  Reservar
+                  {t.nav.book}
                 </Link>
                 {isAdmin && (
                   <Link
@@ -102,7 +102,7 @@ export default function NavbarContent() {
                     className="flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-amber-400 transition-colors"
                   >
                     <Shield className="w-4 h-4" />
-                    Admin
+                    {t.nav.admin}
                   </Link>
                 )}
                 <button
@@ -110,7 +110,7 @@ export default function NavbarContent() {
                   className="flex items-center gap-2 px-4 py-2 text-sm text-white/50 hover:text-red-400 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  Salir
+                  {t.nav.logout}
                 </button>
               </>
             ) : (
@@ -120,19 +120,19 @@ export default function NavbarContent() {
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/20 transition-all"
                 >
                   <Calendar className="w-4 h-4" />
-                  Sacar Turno
+                  {t.nav.book}
                 </Link>
                 <Link
                   href="/login"
                   className="px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
                 >
-                  Ingresar
+                  {t.nav.login}
                 </Link>
                 <Link
                   href="/register"
                   className="px-4 py-2 text-sm bg-white text-black rounded-lg hover:bg-white/90 transition-all font-medium"
                 >
-                  Registrarse
+                  {t.nav.register}
                 </Link>
               </>
             )}

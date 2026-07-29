@@ -12,6 +12,7 @@ import { CalendarDays, ClipboardList, ArrowLeft, CheckCircle } from "lucide-reac
 import BackButton from "@/components/BackButton";
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
+import { useLang } from "@/contexts/LangContext";
 
 import { generateTimeSlots } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export default function ReservarContent() {
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const { tenant } = useTenant();
+  const { t } = useLang();
 
   useEffect(() => {
     fetchServices();
@@ -191,7 +193,7 @@ export default function ReservarContent() {
         <BackButton href="/" />
         <div className="flex items-center gap-2 mb-8">
           <CalendarDays className="w-5 h-5 text-amber-400" />
-          <h1 className="text-xl font-bold text-white">Reservar Turno</h1>
+          <h1 className="text-xl font-bold text-white">{t.booking.title}</h1>
         </div>
 
         <div className="flex items-center gap-2 mb-8">
@@ -242,7 +244,7 @@ export default function ReservarContent() {
                 onClick={() => setStep("form")}
                 className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/25"
               >
-                Continuar
+                {t.booking.continue}
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>
             )}
@@ -252,7 +254,7 @@ export default function ReservarContent() {
         {step === "form" && (
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
             <div className="mb-6 p-4 bg-white/5 rounded-xl">
-              <p className="text-sm text-white/50">Fecha y hora seleccionada:</p>
+              <p className="text-sm text-white/50">{t.booking.dateTime}</p>
               <p className="text-white font-medium mt-1">
                 {selectedDate && format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })} - {selectedTime}
               </p>
@@ -260,7 +262,7 @@ export default function ReservarContent() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5">
-                  Servicio
+                  {t.booking.service}
                 </label>
                 <select
                   value={selectedServiceId}
@@ -276,12 +278,12 @@ export default function ReservarContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5">
-                  Notas (opcional)
+                  {t.booking.notes}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Contanos si tenés alguna observación..."
+                  placeholder={t.booking.notesPlaceholder}
                   rows={3}
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none"
                 />
@@ -303,16 +305,16 @@ export default function ReservarContent() {
                     />
                   </button>
                   <div>
-                    <p className="text-sm font-medium text-white">Repetir semanalmente</p>
+                    <p className="text-sm font-medium text-white">{t.booking.recurring}</p>
                     <p className="text-xs text-white/40">
-                      Crear turnos automáticos todas las semanas
+                      {t.booking.recurringDesc}
                     </p>
                   </div>
                 </label>
                 {recurring && (
                   <div className="mt-3 pl-[3.25rem]">
                     <label className="block text-xs font-medium text-white/50 mb-1">
-                      Hasta
+                      {t.booking.until}
                     </label>
                     <input
                       type="date"
@@ -331,7 +333,7 @@ export default function ReservarContent() {
                   onClick={() => setStep("calendar")}
                   className="flex-1 px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 hover:text-white transition-all border border-white/10"
                 >
-                  Volver
+                  {t.booking.back}
                 </button>
                 <button
                   type="submit"
@@ -343,7 +345,7 @@ export default function ReservarContent() {
                   ) : (
                     <>
                       <ClipboardList className="w-4 h-4" />
-                      Confirmar Turno
+                      {t.booking.confirmBooking}
                     </>
                   )}
                 </button>

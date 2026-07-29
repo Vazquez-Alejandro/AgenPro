@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { BlockedDate } from "@/types";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
+import { useLang } from "@/contexts/LangContext";
 import Pagination from "@/components/Pagination";
 
 const PAGE_SIZE = 10;
@@ -17,6 +18,7 @@ export default function BlockedDatesContent() {
   const [page, setPage] = useState(1);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
+  const { t } = useLang();
 
   useEffect(() => {
     fetchDates();
@@ -61,13 +63,13 @@ export default function BlockedDatesContent() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Días Bloqueados</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">{t.admin.blockedDatesPage.title}</h1>
 
       <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-6">
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">
-              Fecha
+              {t.admin.blockedDatesPage.date}
             </label>
             <input
               type="date"
@@ -78,7 +80,7 @@ export default function BlockedDatesContent() {
           </div>
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">
-              Motivo
+              {t.admin.blockedDatesPage.reason}
             </label>
             <input
               type="text"
@@ -94,7 +96,7 @@ export default function BlockedDatesContent() {
             className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
-            Agregar
+            {t.admin.blockedDatesPage.save}
           </button>
         </div>
       </div>

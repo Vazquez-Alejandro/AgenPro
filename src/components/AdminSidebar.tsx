@@ -14,20 +14,22 @@ import {
   Menu,
   X,
 } from "lucide-react";
-
-const links = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/agenda", label: "Agenda", icon: Calendar },
-  { href: "/admin/availability", label: "Horarios", icon: Clock },
-  { href: "/admin/blocked-dates", label: "Días Bloqueados", icon: Ban },
-  { href: "/admin/blacklist", label: "Clientes Bloqueados", icon: UserX },
-  { href: "/admin/services", label: "Servicios", icon: Scissors },
-  { href: "/admin/staff", label: "Equipo", icon: Users },
-  { href: "/admin/settings", label: "Configuración", icon: Settings },
-];
+import { useLang } from "@/contexts/LangContext";
 
 export default function AdminSidebar({ tenantSlug }: { tenantSlug: string | null }) {
   const [open, setOpen] = useState(false);
+  const { t } = useLang();
+
+  const links = [
+    { href: "/admin", label: t.admin.dashboard, icon: LayoutDashboard },
+    { href: "/admin/agenda", label: t.admin.agenda, icon: Calendar },
+    { href: "/admin/availability", label: t.admin.availability, icon: Clock },
+    { href: "/admin/blocked-dates", label: t.admin.blockedDates, icon: Ban },
+    { href: "/admin/blacklist", label: t.admin.blacklist, icon: UserX },
+    { href: "/admin/services", label: t.admin.services, icon: Scissors },
+    { href: "/admin/staff", label: t.admin.staffPage.title, icon: Users },
+    { href: "/admin/settings", label: t.admin.settings, icon: Settings },
+  ];
 
   return (
     <>
@@ -51,7 +53,7 @@ export default function AdminSidebar({ tenantSlug }: { tenantSlug: string | null
         } md:translate-x-0 md:static md:shrink-0`}
       >
         <h2 className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mb-4 mt-10 md:mt-0">
-          Admin
+          {t.nav.admin}
         </h2>
         {links.map((link) => (
           <Link
@@ -73,7 +75,7 @@ export default function AdminSidebar({ tenantSlug }: { tenantSlug: string | null
               className="flex items-center gap-2 px-3 py-2 text-sm text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/5 rounded-lg transition-colors"
             >
               <Calendar className="w-4 h-4" />
-              Ver página pública
+              {t.admin.publicPage}
             </a>
           </div>
         )}

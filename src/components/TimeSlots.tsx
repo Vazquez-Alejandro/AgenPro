@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock } from "lucide-react";
+import { useLang } from "@/contexts/LangContext";
 
 interface TimeSlotsProps {
   selectedTime: string | null;
@@ -15,17 +16,19 @@ export default function TimeSlots({
   disabledSlots,
   timeSlots,
 }: TimeSlotsProps) {
+  const { t } = useLang();
+
   if (timeSlots.length === 0) {
     return (
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Clock className="w-4 h-4 text-amber-400" />
           <h3 className="text-sm font-medium text-white/70">
-            Horarios Disponibles
+            {t.booking.slots}
           </h3>
         </div>
         <p className="text-sm text-white/30 text-center py-4">
-          No hay horarios disponibles para este día
+          {t.booking.noSlots}
         </p>
       </div>
     );
@@ -36,7 +39,7 @@ export default function TimeSlots({
       <div className="flex items-center gap-2 mb-4">
         <Clock className="w-4 h-4 text-amber-400" />
         <h3 className="text-sm font-medium text-white/70">
-          Horarios Disponibles
+          {t.booking.slots}
         </h3>
       </div>
 

@@ -18,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import { useLang } from "@/contexts/LangContext";
 
 import { generateTimeSlots } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ export default function TenantBookingPage({
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
+  const { t } = useLang();
 
   const primaryColor = tenant.primary_color || "#f59e0b";
 
@@ -256,7 +258,7 @@ export default function TenantBookingPage({
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-8">
           <CalendarDays className="w-5 h-5" style={{ color: primaryColor }} />
-          <h1 className="text-xl font-bold text-white">Reservar Turno</h1>
+          <h1 className="text-xl font-bold text-white">{t.booking.title}</h1>
         </div>
 
         {error && (
@@ -291,7 +293,7 @@ export default function TenantBookingPage({
                 className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 text-white rounded-xl font-medium transition-all shadow-lg"
                 style={{ backgroundColor: primaryColor }}
               >
-                Continuar
+                {t.booking.continue}
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </button>
             )}
@@ -301,7 +303,7 @@ export default function TenantBookingPage({
         {step === "form" && (
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
             <div className="mb-6 p-4 bg-white/5 rounded-xl">
-              <p className="text-sm text-white/50">Fecha y hora seleccionada:</p>
+              <p className="text-sm text-white/50">{t.booking.dateTime}</p>
               <p className="text-white font-medium mt-1">
                 {selectedDate && format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })} - {selectedTime}
               </p>
@@ -311,7 +313,7 @@ export default function TenantBookingPage({
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
                   <Scissors className="w-3.5 h-3.5" />
-                  Servicio
+                  {t.booking.service}
                 </label>
                 <select
                   value={selectedServiceId}
@@ -330,13 +332,13 @@ export default function TenantBookingPage({
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5" />
-                  Nombre
+                  {t.booking.name}
                 </label>
                 <input
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Tu nombre completo"
+                  placeholder={t.booking.namePlaceholder}
                   required
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
                   style={{ outlineColor: primaryColor }}
@@ -346,13 +348,13 @@ export default function TenantBookingPage({
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" />
-                  Email
+                  {t.booking.email}
                 </label>
                 <input
                   type="email"
                   value={clientEmail}
                   onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder={t.booking.emailPlaceholder}
                   required
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
                   style={{ outlineColor: primaryColor }}
@@ -362,13 +364,13 @@ export default function TenantBookingPage({
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" />
-                  Teléfono
+                  {t.booking.phone}
                 </label>
                 <input
                   type="tel"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="+54 11 1234 5678"
+                  placeholder={t.booking.phonePlaceholder}
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all"
                   style={{ outlineColor: primaryColor }}
                 />
@@ -380,7 +382,7 @@ export default function TenantBookingPage({
                   onClick={() => setStep("calendar")}
                   className="flex-1 px-4 py-2.5 bg-white/5 text-white/70 rounded-xl font-medium hover:bg-white/10 transition-all border border-white/10"
                 >
-                  Volver
+                  {t.booking.back}
                 </button>
                 <button
                   type="submit"
@@ -393,7 +395,7 @@ export default function TenantBookingPage({
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4" />
-                      Confirmar Turno
+                      {t.booking.confirmBooking}
                     </>
                   )}
                 </button>

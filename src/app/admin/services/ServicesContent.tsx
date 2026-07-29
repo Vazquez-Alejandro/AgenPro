@@ -6,6 +6,7 @@ import type { Service } from "@/types";
 import { Plus, Loader2, X, Clock } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useLang } from "@/contexts/LangContext";
 import Pagination from "@/components/Pagination";
 
 import { formatPrice } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default function ServicesContent() {
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
   const { toast } = useToast();
+  const { t } = useLang();
 
   useEffect(() => {
     fetchServices();
@@ -81,13 +83,13 @@ export default function ServicesContent() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Servicios</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">{t.admin.servicesPage.title}</h1>
 
       <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-6">
         <div className="flex flex-wrap gap-3 items-end">
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">
-              Nombre
+              {t.admin.servicesPage.name}
             </label>
             <input
               type="text"
@@ -99,7 +101,7 @@ export default function ServicesContent() {
           </div>
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">
-              Duración (min)
+              {t.admin.servicesPage.duration}
             </label>
             <input
               type="number"
@@ -112,7 +114,7 @@ export default function ServicesContent() {
           </div>
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1">
-              Precio ($)
+              {t.admin.servicesPage.price}
             </label>
             <input
               type="number"
@@ -125,7 +127,7 @@ export default function ServicesContent() {
           </div>
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1 flex items-center gap-1">
-              <Clock className="w-3 h-3" /> Limpieza (min)
+              <Clock className="w-3 h-3" /> {t.admin.servicesPage.cleaningTime}
             </label>
             <input
               type="number"
@@ -142,7 +144,7 @@ export default function ServicesContent() {
             className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-400 transition-all disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
-            Agregar
+            {t.admin.servicesPage.add}
           </button>
         </div>
       </div>

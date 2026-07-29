@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { useTenant } from "@/contexts/TenantContext";
+import { useLang } from "@/contexts/LangContext";
 
 import { formatPrice } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export default function AgendaContent() {
   const supabase = useRef(createClient()).current;
   const { toast } = useToast();
   const { tenant } = useTenant();
+  const { t } = useLang();
   const tId = tenant?.id;
 
   const today = new Date();
@@ -153,7 +155,7 @@ export default function AgendaContent() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-white">Agenda del Profesional</h1>
+      <h1 className="text-2xl font-bold text-white">{t.admin.agendaPage.title}</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -164,11 +166,11 @@ export default function AgendaContent() {
             </div>
           </div>
           <p className="text-2xl font-bold text-white">{todayApps.length}</p>
-          <p className="text-sm text-white/50 mt-1">Turnos hoy</p>
+          <p className="text-sm text-white/50 mt-1">{t.admin.agendaPage.today}</p>
           {todayApps.length > 0 && (
             <p className="text-xs text-white/30 mt-1">
-              {todayApps.filter((a) => a.status === "confirmed").length} pendientes
-              &middot; {todayApps.filter((a) => a.status === "completed").length} completados
+              {todayApps.filter((a) => a.status === "confirmed").length} {t.admin.agendaPage.pending}
+              &middot; {todayApps.filter((a) => a.status === "completed").length} {t.admin.agendaPage.completed}
             </p>
           )}
         </div>
@@ -182,7 +184,7 @@ export default function AgendaContent() {
           <p className="text-2xl font-bold text-white">
             {weekApps.filter((a) => a.status !== "cancelled").length}
           </p>
-          <p className="text-sm text-white/50 mt-1">Turnos esta semana</p>
+          <p className="text-sm text-white/50 mt-1">{t.admin.agendaPage.week}</p>
         </div>
 
         <div className="p-5 bg-white/[0.02] border border-white/5 rounded-xl">
@@ -195,7 +197,7 @@ export default function AgendaContent() {
             {formatPrice(monthIncome)}
           </p>
           <p className="text-sm text-white/50 mt-1">
-            Ingresos del mes ({monthPaidCount} turnos)
+            {t.admin.agendaPage.monthIncome} ({monthPaidCount} turnos)
           </p>
         </div>
       </div>
@@ -204,12 +206,12 @@ export default function AgendaContent() {
       <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
           <Clock className="w-4 h-4 text-amber-400" />
-          Turnos de Hoy — {format(today, "EEEE, dd 'de' MMMM", { locale: es })}
+          {t.admin.agendaPage.today} — {format(today, "EEEE, dd 'de' MMMM", { locale: es })}
         </h2>
 
         {todayApps.length === 0 ? (
           <p className="text-white/30 text-center py-8">
-            No hay turnos para hoy
+            {t.admin.agendaPage.noToday}
           </p>
         ) : (
           <div className="space-y-3">
@@ -218,10 +220,10 @@ export default function AgendaContent() {
                 key={app.id}
                 app={app}
                 onConfirm={() =>
-                  updateStatus(app.id, "completed", "Turno marcado como completado")
+                  updateStatus(app.id, "completed", t.admin.agendaPage.confirmedToast)
                 }
                 onCancel={() =>
-                  updateStatus(app.id, "cancelled", "Turno cancelado")
+                  updateStatus(app.id, "cancelled", t.admin.agendaPage.cancelledToast)
                 }
               />
             ))}
@@ -234,7 +236,7 @@ export default function AgendaContent() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <Calendar className="w-4 h-4 text-blue-400" />
-            Agenda Semanal
+            {t.admin.agendaPage.weekTitle}
           </h2>
           <div className="flex items-center gap-2">
             <button
@@ -324,15 +326,16 @@ function AppointmentCard({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLang();
   const statusColors: Record<string, string> = {
     confirmed: "bg-amber-500/10 text-amber-400",
     completed: "bg-blue-500/10 text-blue-400",
     cancelled: "bg-red-500/10 text-red-400",
   };
   const statusLabels: Record<string, string> = {
-    confirmed: "Pendiente",
-    completed: "Completado",
-    cancelled: "Cancelado",
+    confirmed: t.admin.agendaPage.pending,
+    completed: t.admin.agendaPage.completed,
+    cancelled: t.admin.agendaPage.cancelled,
   };
 
   return (
@@ -383,9 +386,9 @@ function AppointmentCard({
             <span className="flex items-center gap-1">
               <CreditCard className="w-3 h-3" />
               {app.payment_status === "paid"
-                ? "Pagado"
+                ? t.admin.agendaPage.paid
                 : app.payment_status === "unpaid"
-                  ? "Pendiente"
+                  ? t.admin.agendaPage.unpaid
                   : app.payment_status}
             </span>
           )}
@@ -403,27 +406,27 @@ function AppointmentCard({
               className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-400 rounded-lg text-xs font-medium hover:bg-amber-500/20 transition-all"
             >
               <CheckCircle className="w-3.5 h-3.5" />
-              Completar
+              {t.admin.agendaPage.confirm}
             </button>
             <button
               onClick={onCancel}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs font-medium hover:bg-red-500/20 transition-all"
             >
               <XCircle className="w-3.5 h-3.5" />
-              Cancelar
+              {t.admin.agendaPage.cancel}
             </button>
           </>
         )}
         {app.status === "completed" && (
           <span className="text-xs text-blue-400/60 flex items-center gap-1">
             <CheckCircle className="w-3.5 h-3.5" />
-            Atendido
+            {t.admin.agendaPage.attended}
           </span>
         )}
         {app.status === "cancelled" && (
           <span className="text-xs text-red-400/60 flex items-center gap-1">
             <XCircle className="w-3.5 h-3.5" />
-            Cancelado
+            {t.admin.agendaPage.cancelled}
           </span>
         )}
       </div>

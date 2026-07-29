@@ -6,6 +6,7 @@ import type { Availability, Service } from "@/types";
 import { DAY_NAMES } from "@/types";
 import { Save, Loader2, Settings2 } from "lucide-react";
 import { useTenant } from "@/contexts/TenantContext";
+import { useLang } from "@/contexts/LangContext";
 
 const EMPTY_DAY_TEMPLATE = {
   enabled: false,
@@ -23,6 +24,7 @@ export default function AvailabilityContent() {
   const [saving, setSaving] = useState(false);
   const supabase = useRef(createClient()).current;
   const { tenant } = useTenant();
+  const { t } = useLang();
 
   useEffect(() => {
     if (tenant) {
@@ -178,7 +180,7 @@ export default function AvailabilityContent() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Horarios Laborales</h1>
+          <h1 className="text-2xl font-bold text-white">{t.admin.availabilityPage.title}</h1>
           <p className="text-white/50 mt-1">
             Configurá los días y horarios de atención
           </p>
@@ -193,7 +195,7 @@ export default function AvailabilityContent() {
           ) : (
             <Save className="w-4 h-4" />
           )}
-          Guardar
+          {t.admin.availabilityPage.save}
         </button>
       </div>
 
@@ -240,10 +242,10 @@ export default function AvailabilityContent() {
           <thead>
             <tr className="border-b border-white/5">
               <th className="text-left py-3 px-4 text-sm font-medium text-white/40">Día</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">Disponible</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">Inicio</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">Fin</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">Duración (min)</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">{t.admin.availabilityPage.enabled}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">{t.admin.availabilityPage.startTime}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">{t.admin.availabilityPage.endTime}</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-white/40">{t.admin.availabilityPage.slotDuration}</th>
             </tr>
           </thead>
           <tbody>

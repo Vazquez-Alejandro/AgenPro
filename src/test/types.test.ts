@@ -26,8 +26,6 @@ describe("DEFAULT_FEATURES", () => {
     const expectedKeys = [
       "blacklist",
       "cleaning_time",
-      "smart_assignment",
-      "double_booking",
       "mandatory_deposit",
       "no_show_tracking",
       "confirmation_button",

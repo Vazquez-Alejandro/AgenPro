@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { UserPlus, Eye, EyeOff, Building2, Phone, Mail, User } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { useLang } from "@/contexts/LangContext";
 import type { CustomField } from "@/types";
 
 export default function RegisterClientContent() {
@@ -21,6 +22,7 @@ export default function RegisterClientContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useRef(createClient()).current;
+  const { t } = useLang();
 
   const tenantId = searchParams.get("tenant_id");
   const redirect = searchParams.get("redirect") || "/";
@@ -130,7 +132,7 @@ export default function RegisterClientContent() {
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5" />
-              Email
+              {t.auth.email}
             </label>
             <input
               type="email"
@@ -189,7 +191,7 @@ export default function RegisterClientContent() {
 
           <div>
             <label className="block text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
-              Contraseña
+              {t.auth.password}
             </label>
             <div className="relative">
               <input
@@ -234,7 +236,7 @@ export default function RegisterClientContent() {
         </form>
 
         <p className="mt-6 text-center text-sm text-white/40">
-          ¿Ya tenés cuenta?{" "}
+          {t.auth.hasAccount}{" "}
           <Link
             href={tenantId ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
             className="text-amber-400 hover:text-amber-300 transition-colors"

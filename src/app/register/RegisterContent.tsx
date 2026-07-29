@@ -8,6 +8,7 @@ import {
   UserPlus, Eye, EyeOff, Building2, Globe, Check,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { useLang } from "@/contexts/LangContext";
 
 const PLANS = [
   {
@@ -54,6 +55,7 @@ export default function RegisterContent() {
   const [selectedPlan, setSelectedPlan] = useState("free");
   const router = useRouter();
   const supabase = useRef(createClient()).current;
+  const { t } = useLang();
 
   const handleBusinessNameChange = (name: string) => {
     setBusinessName(name);
@@ -276,7 +278,7 @@ export default function RegisterContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">{t.auth.email}</label>
                 <input
                   type="email"
                   value={email}
@@ -288,7 +290,7 @@ export default function RegisterContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5">Contraseña</label>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">{t.auth.password}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -310,7 +312,7 @@ export default function RegisterContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-1.5">Confirmar Contraseña</label>
+                <label className="block text-sm font-medium text-white/70 mb-1.5">{t.auth.confirmPassword}</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -346,9 +348,9 @@ export default function RegisterContent() {
         </form>
 
         <p className="mt-6 text-center text-sm text-white/40">
-          ¿Ya tenés cuenta?{" "}
+          {t.auth.hasAccount}{" "}
           <Link href="/login" className="text-amber-400 hover:text-amber-300 transition-colors">
-            Ingresá
+            {t.auth.loginLink}
           </Link>
         </p>
       </div>
