@@ -14,12 +14,23 @@ export async function GET(req: Request) {
 
   const { data: appointment } = await supabase
     .from("appointments")
-    .select("id, date, time, client_name, tenant_id, service, service_id")
+    .select("id, date, time, client_name, tenant_id, service, service_id, created_at")
     .eq("confirmation_token", token)
     .single();
 
   if (!appointment) {
     return NextResponse.json({ error: "Turno no encontrado" }, { status: 404 });
+  }
+
+  // Token expires after 48 hours
+  const createdAt = new Date(appointment.created_at).getTime();
+  const nowMs = Date.now();
+  const TOKEN_TTL_MS = 48 * 60 * 60 * 1000;
+  if (nowMs - createdAt > TOKEN_TTL_MS) {
+    return NextResponse.json(
+      { error: "El enlace expiró. Solicitá uno nuevo." },
+      { status: 410 }
+    );
   }
 
   const now = new Date();

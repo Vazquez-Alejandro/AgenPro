@@ -139,38 +139,26 @@ export const FEATURES: Record<string, { label: string; desc: string; plan: strin
     desc: "Tiempo muerto automático entre turnos para desinfección o alistamiento.",
     plan: "pro",
   },
-  smart_assignment: {
-    label: "Asignación Inteligente",
-    desc: "Asigná turnos automáticamente al empleado con más disponibilidad.",
-    plan: "pro",
-  },
-  double_booking: {
-    label: "Sobreturnos Manuales",
-    desc: "Habilitá turnos extras desde el panel para clientes VIP sin romper la agenda.",
-    plan: "pro",
-  },
   mandatory_deposit: {
     label: "Seña Obligatoria",
     desc: "El cliente paga un % del servicio para confirmar el turno. Reduce ausentismo.",
-    plan: "pro",
+    plan: "premium",
   },
   no_show_tracking: {
     label: "Historial de No-Show",
     desc: "Estadísticas de clientes que faltan, días rentables y rendimiento por empleado.",
-    plan: "pro",
+    plan: "premium",
   },
   confirmation_button: {
     label: "Confirmación por WhatsApp",
     desc: "El cliente confirma o cancela desde el link del mensaje. Cancela con 24hs → avisa a lista de espera.",
-    plan: "pro",
+    plan: "premium",
   },
 };
 
 export const DEFAULT_FEATURES: Record<string, boolean> = {
   blacklist: false,
   cleaning_time: false,
-  smart_assignment: false,
-  double_booking: false,
   mandatory_deposit: false,
   no_show_tracking: false,
   confirmation_button: false,
