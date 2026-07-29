@@ -11,11 +11,32 @@ import BackButton from "@/components/BackButton";
 
 const PLANS = [
   {
-    name: "pro",
-    label: "Pro",
-    price: "$15/mes",
-    desc: "Todo incluido. Sin límites. Turnos ilimitados, múltiples servicios, notificaciones WhatsApp, disponibilidad por servicio.",
+    name: "free",
+    label: "Gratuito",
+    price: "$0",
+    desc: "30 turnos/mes, 1 usuario. Ideal para empezar.",
+    popular: false,
+  },
+  {
+    name: "inicial",
+    label: "Inicial",
+    price: "$12/mes",
+    desc: "100 turnos/mes, 1 usuario. Para negocios en crecimiento.",
+    popular: false,
+  },
+  {
+    name: "profesional",
+    label: "Profesional",
+    price: "$30/mes",
+    desc: "500 turnos/mes, 5 usuarios. Alertas avanzadas y blacklist.",
     popular: true,
+  },
+  {
+    name: "premium",
+    label: "Premium",
+    price: "$75/mes",
+    desc: "Ilimitado. Todo incluido: confirmación WhatsApp, recordatorios, depósito obligatorio.",
+    popular: false,
   },
 ];
 
@@ -37,7 +58,7 @@ export default function RegisterContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("inicial");
+  const [selectedPlan, setSelectedPlan] = useState("free");
   const router = useRouter();
   const supabase = useRef(createClient()).current;
 

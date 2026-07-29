@@ -8,14 +8,9 @@ export async function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    return createServerClient("https://placeholder.supabase.co", "placeholder", {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
-    });
+    throw new Error(
+      "Supabase environment variables not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
   }
 
   return createServerClient(url, key, {

@@ -1,11 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
-const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
 const twilioFrom =
   Deno.env.get("TWILIO_WHATSAPP_NUMBER") || "whatsapp:+14155238886";
+
+if (!supabaseUrl || !supabaseKey || !twilioAccountSid || !twilioAuthToken) {
+  console.error("Missing required environment variables");
+  Deno.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

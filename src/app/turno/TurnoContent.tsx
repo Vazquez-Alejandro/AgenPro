@@ -170,17 +170,25 @@ export default function TurnoContent() {
     const blocked: Set<string> = new Set((data || []).map((a: { time: string; service_id: string }) => a.time));
 
     if (data && tenant.features?.cleaning_time) {
-      const allServices = await supabase.from("services").select("id, cleaning_time");
-      const svcMap = new Map((allServices.data || []).map((s: { id: string; cleaning_time: number }) => [s.id, s.cleaning_time]));
-      const slotDur = 30;
+      const allServices = await supabase.from("services").select("id, duration, cleaning_time");
+      const svcMap = new Map<string, { duration: number; cleaning_time: number }>((allServices.data || []).map((s: { id: string; duration: number; cleaning_time: number }) => [s.id, { duration: s.duration, cleaning_time: s.cleaning_time }]));
+
+      // Get slot duration from availability config
+      const { data: avail } = await supabase
+        .from("availability")
+        .select("slot_duration")
+        .eq("tenant_id", tenant.id)
+        .eq("day_of_week", selectedDate.getDay())
+        .single();
+      const slotDur = avail?.slot_duration || 30;
 
       for (const apt of data) {
-        const svcCleaning = svcMap.get(apt.service_id) || tenant.default_cleaning_time || 0;
+        const svcInfo = svcMap.get(apt.service_id);
+        const aptDuration = svcInfo?.duration || 30;
+        const svcCleaning = svcInfo?.cleaning_time || tenant.default_cleaning_time || 0;
         const aptStart = apt.time.split(":").map(Number);
         const aptMinutes = aptStart[0] * 60 + aptStart[1];
-        const aptDuration = 30;
-        const aptCleaning = svcCleaning;
-        const aptEnd = aptMinutes + aptDuration + aptCleaning;
+        const aptEnd = aptMinutes + aptDuration + svcCleaning;
 
         for (let m = aptMinutes; m < aptEnd; m += slotDur) {
           const h = Math.floor(m / 60);

@@ -14,6 +14,36 @@ function formatDate(dateStr: string) {
   });
 }
 
+async function verifyStripePayment(paymentIntentId: string): Promise<boolean> {
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeSecretKey || !paymentIntentId) return false;
+
+  try {
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(stripeSecretKey);
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    return intent.status === "succeeded";
+  } catch {
+    return false;
+  }
+}
+
+async function verifyMercadoPagoPayment(preferenceId: string): Promise<boolean> {
+  const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+  if (!mpAccessToken || !preferenceId) return false;
+
+  try {
+    const res = await fetch(
+      `https://api.mercadopago.com/v1/payments/search?external_reference=${preferenceId}`,
+      { headers: { Authorization: `Bearer ${mpAccessToken}` } }
+    );
+    const data = await res.json();
+    return data.results?.some((p: { status: string }) => p.status === "approved");
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -44,9 +74,17 @@ export async function POST(request: Request) {
     user_id,
   } = body;
 
-  if (!date || !time || !client_name || !client_email) {
+  if (!date || !time || !client_name || !client_email || !tenant_id) {
     return NextResponse.json(
       { error: "Faltan campos requeridos" },
+      { status: 400 }
+    );
+  }
+
+  // Basic email validation
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(client_email)) {
+    return NextResponse.json(
+      { error: "Email inválido" },
       { status: 400 }
     );
   }
@@ -105,6 +143,23 @@ export async function POST(request: Request) {
     .select("name")
     .eq("id", service_id)
     .single();
+
+  // --- Verify payment actually succeeded ---
+  let paymentVerified = false;
+  if (payment_method === "stripe" && payment_intent_id) {
+    paymentVerified = await verifyStripePayment(payment_intent_id);
+  } else if (payment_method === "mercadopago" && payment_intent_id) {
+    paymentVerified = await verifyMercadoPagoPayment(payment_intent_id);
+  } else if (!payment_method) {
+    paymentVerified = true; // Free booking
+  }
+
+  if (!paymentVerified) {
+    return NextResponse.json(
+      { error: "El pago no fue verificado. Intentá de nuevo." },
+      { status: 402 }
+    );
+  }
 
   // --- Confirmation token (Plan Premium) ---
   const confirmationToken = features.confirmation_button

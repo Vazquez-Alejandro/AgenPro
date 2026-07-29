@@ -40,8 +40,24 @@ export default function DashboardContent() {
 
   const fetchAppointments = async () => {
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); return; }
+
+    // Get user's tenant_id
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .single();
+
     let query = supabase.from("appointments").select("*");
-    if (user) query = query.eq("user_id", user.id);
+
+    if (profile?.tenant_id) {
+      // Show appointments belonging to user OR their tenant
+      query = query.or(`user_id.eq.${user.id},tenant_id.eq.${profile.tenant_id}`);
+    } else {
+      query = query.eq("user_id", user.id);
+    }
+
     const { data } = await query.order("date", { ascending: true }).order("time", { ascending: true });
     setAppointments(data || []);
     setLoading(false);

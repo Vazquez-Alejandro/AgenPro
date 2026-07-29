@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
 const origin = process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000";
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
   if (!mpAccessToken) {
     return NextResponse.json(
       { error: "Mercado Pago no configurado" },
@@ -14,7 +24,7 @@ export async function POST(request: Request) {
   const { service_name, amount, client_name, client_email } =
     await request.json();
 
-  if (!amount || amount <= 0) {
+  if (!amount || amount <= 0 || amount > 10000000) {
     return NextResponse.json({ error: "Monto inválido" }, { status: 400 });
   }
 

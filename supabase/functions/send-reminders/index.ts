@@ -1,9 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "https://esm.sh/resend@4.1.2";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+const emailFrom = Deno.env.get("EMAIL_FROM") || "TurnosOnline <noreply@tu-dominio.com>";
+
+if (!supabaseUrl || !supabaseKey || !resendApiKey) {
+  console.error("Missing required environment variables");
+  Deno.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const resend = new Resend(resendApiKey);
@@ -16,9 +22,10 @@ Deno.serve(async () => {
 
     const { data: appointments, error } = await supabase
       .from("appointments")
-      .select("*, users:user_id(email)")
+      .select("id, date, time, service, client_name, client_email, tenant_id")
       .eq("date", dateStr)
-      .eq("status", "confirmed");
+      .eq("status", "confirmed")
+      .not("client_email", "is", null);
 
     if (error) throw error;
 
@@ -32,17 +39,16 @@ Deno.serve(async () => {
     const results = [];
 
     for (const apt of appointments) {
-      const userEmail = apt.users?.email;
-      if (!userEmail) continue;
+      if (!apt.client_email) continue;
 
-      const { data: error } = await resend.emails.send({
-        from: "TurnosOnline <recordatorios@tu-dominio.com>",
-        to: [userEmail],
+      const { error: sendError } = await resend.emails.send({
+        from: emailFrom,
+        to: [apt.client_email],
         subject: "Recordatorio: Tenés un turno mañana",
         html: `
           <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#0a0a0a;color:#ededed;padding:32px;border-radius:16px">
             <h1 style="color:#34d399;font-size:24px;margin:0 0 16px">⏰ Recordatorio</h1>
-            <p style="color:#a1a1aa;margin:0 0 24px">Recordá que tenés un turno agendado:</p>
+            <p style="color:#a1a1aa;margin:0 0 24px">Hola ${apt.client_name || ""}, recordá que tenés un turno agendado:</p>
             <div style="background:#1a1a1a;border-radius:12px;padding:16px;margin-bottom:24px">
               <p style="margin:0 0 8px;color:#ededed"><strong>Fecha:</strong> ${new Date(apt.date + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
               <p style="margin:0 0 8px;color:#ededed"><strong>Horario:</strong> ${apt.time} hs</p>
@@ -53,14 +59,14 @@ Deno.serve(async () => {
         `,
       });
 
-      if (error) {
-        results.push({ email: userEmail, error });
+      if (sendError) {
+        results.push({ email: apt.client_email, error: sendError.message });
       } else {
-        results.push({ email: userEmail, sent: true });
+        results.push({ email: apt.client_email, sent: true });
       }
     }
 
-    return new Response(JSON.stringify({ sent: results.length }), {
+    return new Response(JSON.stringify({ sent: results.length, results }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
