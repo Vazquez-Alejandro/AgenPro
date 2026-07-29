@@ -66,7 +66,7 @@ ALTER TABLE services ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
 
 -- Payment fields
-ALTER TABLE appointments ADD COLUMN IF NOT EXISTS payment_intent_id TEXT;
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS payment_id TEXT;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS payment_method TEXT;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending';
 
@@ -75,7 +75,7 @@ ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_24h_sent BOOLEAN NOT 
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_1h_sent BOOLEAN NOT NULL DEFAULT false;
 
 CREATE INDEX idx_appointments_date_time ON appointments(date, time);
-CREATE INDEX idx_appointments_payment_intent ON appointments(payment_intent_id);
+CREATE INDEX idx_appointments_payment_intent ON appointments(payment_id);
 CREATE INDEX idx_appointments_tenant_date ON appointments(tenant_id, date);
 
 -- =====================

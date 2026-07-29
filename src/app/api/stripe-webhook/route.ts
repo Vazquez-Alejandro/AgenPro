@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     await supabase
       .from("appointments")
       .update({ payment_status: "paid" })
-      .eq("payment_intent_id", paymentIntent.id);
+      .eq("payment_id", paymentIntent.id);
   }
 
   return NextResponse.json({ received: true });
