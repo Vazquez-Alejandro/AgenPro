@@ -5,7 +5,7 @@ export interface Tenant {
   logo_url: string | null;
   primary_color: string;
   subscription_status: string;
-  turnos_limit: number;
+  appointments_limit: number;
   staff_limit: number;
   features: Record<string, boolean>;
   filter_by_service: boolean;

@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
   const { data: tenant } = await supabase
     .from("tenants")
-    .select("turnos_limit, features, deposit_percent, default_cleaning_time")
+    .select("appointments_limit, features, deposit_percent, default_cleaning_time")
     .eq("id", tenant_id)
     .single();
 
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
     .eq("tenant_id", tenant_id)
     .gte("date", startStr);
 
-  if (count != null && count >= tenant.turnos_limit) {
+  if (count != null && count >= tenant.appointments_limit) {
     return NextResponse.json(
       { error: "El negocio alcanzó su límite mensual de turnos." },
       { status: 403 }

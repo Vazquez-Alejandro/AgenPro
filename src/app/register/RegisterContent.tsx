@@ -141,7 +141,7 @@ export default function RegisterContent() {
         name: businessName.trim(),
         slug: slug.trim(),
         subscription_status: selectedPlan,
-        turnos_limit: limits.turnos,
+        appointments_limit: limits.turnos,
         staff_limit: limits.staff,
       })
       .select()

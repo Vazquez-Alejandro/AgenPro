@@ -437,9 +437,9 @@ export default function SettingsContent() {
             {planDisplayName(tenant.subscription_status)}
           </div>
           <span className="text-sm text-white/40">
-            {tenant.turnos_limit >= 999999
+            {tenant.appointments_limit >= 999999
               ? "Turnos ilimitados"
-              : `Hasta ${tenant.turnos_limit} turnos/mes`}
+              : `Hasta ${tenant.appointments_limit} turnos/mes`}
             &nbsp;&middot;&nbsp;
             {tenant.staff_limit >= 999
               ? "Staff ilimitado"

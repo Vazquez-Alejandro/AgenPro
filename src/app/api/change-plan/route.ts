@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   const { data: plan } = await supabase
     .from("plan_definitions")
     .select("*")
-    .eq("name", planName)
+    .eq("key", planName)
     .single();
 
   if (!plan) {
@@ -63,9 +63,9 @@ export async function POST(req: Request) {
   const { error } = await supabase
     .from("tenants")
     .update({
-      subscription_status: plan.name,
-      turnos_limit: plan.max_turnos,
-      staff_limit: plan.max_staff,
+      subscription_status: plan.key,
+      appointments_limit: plan.appointments_limit,
+      staff_limit: plan.staff_limit,
     })
     .eq("id", profile.tenant_id);
 
@@ -77,8 +77,8 @@ export async function POST(req: Request) {
     success: true,
     plan: {
       name: plan.name,
-      max_turnos: plan.max_turnos,
-      max_staff: plan.max_staff,
+      appointments_limit: plan.appointments_limit,
+      staff_limit: plan.staff_limit,
     },
   });
 }

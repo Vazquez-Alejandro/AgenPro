@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   if (tenantId) {
     const { data: tenant } = await supabase
       .from("tenants")
-      .select("turnos_limit, features, default_cleaning_time")
+      .select("appointments_limit, features, default_cleaning_time")
       .eq("id", tenantId)
       .single();
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         .eq("tenant_id", tenantId)
         .gte("date", startStr);
 
-      if (count != null && count >= tenant.turnos_limit) {
+      if (count != null && count >= tenant.appointments_limit) {
         return NextResponse.json(
           { error: "Alcanzaste el límite de turnos de tu plan. Actualizalo en Configuración." },
           { status: 403 }
