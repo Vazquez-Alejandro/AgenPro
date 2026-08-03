@@ -26,6 +26,7 @@ export default function RegisterClientContent() {
 
   const tenantId = searchParams.get("tenant_id");
   const redirect = searchParams.get("redirect") || "/";
+  const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/";
 
   useEffect(() => {
     if (!tenantId) return;
@@ -98,7 +99,7 @@ export default function RegisterClientContent() {
       return;
     }
 
-    router.push(redirect);
+    router.push(safeRedirect);
   };
 
   return (

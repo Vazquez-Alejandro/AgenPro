@@ -71,7 +71,6 @@ export async function POST(request: Request) {
     payment_intent_id,
     payment_method,
     tenant_id,
-    user_id,
   } = body;
 
   if (!date || !time || !client_name || !client_email || !tenant_id) {
@@ -179,7 +178,7 @@ export async function POST(request: Request) {
     payment_method: payment_method || null,
     payment_status: payment_method ? "paid" : "unpaid",
     tenant_id: tenant_id || null,
-    user_id: user_id || null,
+    user_id: null,
     is_recurring: false,
     confirmation_token: confirmationToken,
   };

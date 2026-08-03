@@ -44,7 +44,8 @@ export default function LoginContent() {
     }
 
     const redirect = searchParams.get("redirect") || "/dashboard";
-    router.push(redirect);
+    const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/dashboard";
+    router.push(safeRedirect);
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {

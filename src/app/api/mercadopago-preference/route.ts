@@ -21,11 +21,26 @@ export async function POST(request: Request) {
     );
   }
 
-  const { service_name, amount, client_name, client_email } =
-    await request.json();
+  const { service_id, client_name, client_email } = await request.json();
 
-  if (!amount || amount <= 0 || amount > 10000000) {
-    return NextResponse.json({ error: "Monto inválido" }, { status: 400 });
+  if (!service_id) {
+    return NextResponse.json({ error: "service_id requerido" }, { status: 400 });
+  }
+
+  const { data: service, error: serviceError } = await supabase
+    .from("services")
+    .select("id, name, price")
+    .eq("id", service_id)
+    .single();
+
+  if (serviceError || !service) {
+    return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
+  }
+
+  const amount = service.price;
+
+  if (!amount || amount <= 0) {
+    return NextResponse.json({ error: "Servicio sin precio configurado" }, { status: 400 });
   }
 
   try {
@@ -40,10 +55,10 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           items: [
             {
-              title: service_name || "Turno",
+              title: service.name || "Turno",
               quantity: 1,
               currency_id: "ARS",
-              unit_price: amount / 100,
+              unit_price: amount,
             },
           ],
           payer: {

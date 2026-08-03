@@ -4,7 +4,7 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_ORIGIN": "@origin"
+    "NEXT_PUBLIC_ORIGIN": "https://agenpro.vercel.app"
   },
   "headers": [
     {
