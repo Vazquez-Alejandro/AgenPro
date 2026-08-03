@@ -29,10 +29,11 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const signature = request.headers.get("x-signature") || "";
 
-  if (mpWebhookSecret && signature) {
-    if (!verifySignature(rawBody, signature, mpWebhookSecret)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  if (!mpWebhookSecret) {
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+  if (!verifySignature(rawBody, signature, mpWebhookSecret)) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let body: Record<string, unknown> = {};

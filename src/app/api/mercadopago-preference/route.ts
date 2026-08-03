@@ -29,12 +29,17 @@ export async function POST(request: Request) {
 
   const { data: service, error: serviceError } = await supabase
     .from("services")
-    .select("id, name, price")
+    .select("id, name, price, tenant_id")
     .eq("id", service_id)
     .single();
 
   if (serviceError || !service) {
     return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single();
+  if (profile && service.tenant_id !== profile.tenant_id) {
+    return NextResponse.json({ error: "Servicio no autorizado" }, { status: 403 });
   }
 
   const amount = service.price;

@@ -139,9 +139,13 @@ export async function POST(request: Request) {
 
   const { data: service } = await supabase
     .from("services")
-    .select("name")
+    .select("name, tenant_id")
     .eq("id", service_id)
     .single();
+
+  if (service && service.tenant_id !== tenant_id) {
+    return NextResponse.json({ error: "Servicio no pertenece a este negocio" }, { status: 400 });
+  }
 
   // --- Verify payment actually succeeded ---
   let paymentVerified = false;
